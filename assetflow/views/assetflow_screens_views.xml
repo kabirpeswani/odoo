@@ -1,0 +1,434 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ================================================================== -->
+    <!--  SCREEN 2 — DASHBOARD                                               -->
+    <!-- ================================================================== -->
+    <record id="view_assetflow_dashboard_form" model="ir.ui.view">
+        <field name="name">assetflow.dashboard.form</field>
+        <field name="model">assetflow.dashboard</field>
+        <field name="arch" type="xml">
+            <form string="Dashboard" create="false" edit="false">
+                <sheet>
+                    <div class="oe_title mb-3">
+                        <h1>Today's Overview</h1>
+                    </div>
+
+                    <!-- Six KPI cards. -->
+                    <div class="row g-3 mb-3">
+                        <div class="col-6 col-md-4 col-lg-2">
+                            <div class="card h-100 border-0 shadow-sm">
+                                <div class="card-body py-3">
+                                    <div class="text-muted small text-uppercase">Available</div>
+                                    <h2 class="mb-0 text-success">
+                                        <field name="available_count"/>
+                                    </h2>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-4 col-lg-2">
+                            <div class="card h-100 border-0 shadow-sm">
+                                <div class="card-body py-3">
+                                    <div class="text-muted small text-uppercase">Allocated</div>
+                                    <h2 class="mb-0 text-primary">
+                                        <field name="allocated_count"/>
+                                    </h2>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-4 col-lg-2">
+                            <div class="card h-100 border-0 shadow-sm">
+                                <div class="card-body py-3">
+                                    <div class="text-muted small text-uppercase">Under Maintenance</div>
+                                    <h2 class="mb-0 text-warning">
+                                        <field name="maintenance_count"/>
+                                    </h2>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-4 col-lg-2">
+                            <div class="card h-100 border-0 shadow-sm">
+                                <div class="card-body py-3">
+                                    <div class="text-muted small text-uppercase">Active Bookings</div>
+                                    <h2 class="mb-0">
+                                        <field name="active_booking_count"/>
+                                    </h2>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-4 col-lg-2">
+                            <div class="card h-100 border-0 shadow-sm">
+                                <div class="card-body py-3">
+                                    <div class="text-muted small text-uppercase">Pending Transfers</div>
+                                    <h2 class="mb-0">
+                                        <field name="pending_transfer_count"/>
+                                    </h2>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-4 col-lg-2">
+                            <div class="card h-100 border-0 shadow-sm">
+                                <div class="card-body py-3">
+                                    <div class="text-muted small text-uppercase">Upcoming Returns</div>
+                                    <h2 class="mb-0">
+                                        <field name="upcoming_return_count"/>
+                                    </h2>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Red banner: only when something is actually overdue. -->
+                    <div class="alert alert-danger d-flex justify-content-between align-items-center"
+                         role="alert" invisible="overdue_count == 0">
+                        <span>
+                            <i class="fa fa-exclamation-triangle me-2" title="Overdue"/>
+                            <field name="overdue_message" readonly="1" nolabel="1"
+                                   class="oe_inline fw-bold"/>
+                        </span>
+                        <button name="action_view_overdue" type="object"
+                                string="Review" class="btn btn-sm btn-danger"/>
+                    </div>
+                    <field name="overdue_count" invisible="1"/>
+
+                    <!-- Quick actions. -->
+                    <div class="d-flex flex-wrap gap-2 mb-4">
+                        <button name="action_register_asset" type="object"
+                                string="+ Register Asset" class="btn btn-primary"/>
+                        <button name="action_book_resource" type="object"
+                                string="Book Resource" class="btn btn-secondary"/>
+                        <button name="action_raise_request" type="object"
+                                string="Raise Request" class="btn btn-secondary"/>
+                    </div>
+
+                    <!-- Recent activity feed.
+                         Deliberately not inside a <group>: a group lays its
+                         children out in a narrow label/value column, which
+                         wraps every line of the feed to a few characters. -->
+                    <div class="mt-2">
+                        <h5 class="text-uppercase text-muted small mb-2">Recent Activity</h5>
+                        <field name="activity_html" nolabel="1" readonly="1"
+                               class="w-100 d-block"/>
+                    </div>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_assetflow_dashboard" model="ir.actions.act_window">
+        <field name="name">Dashboard</field>
+        <field name="res_model">assetflow.dashboard</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="view_assetflow_dashboard_form"/>
+        <field name="target">inline</field>
+    </record>
+
+    <!-- Repoint the existing Dashboard menu at the real dashboard. -->
+    <menuitem id="assetflow.menu_assetflow_dashboard"
+              name="Dashboard"
+              parent="assetflow.menu_assetflow_root"
+              action="action_assetflow_dashboard"
+              sequence="5"/>
+
+    <!-- The asset kanban keeps its own menu, now under Operations. -->
+    <menuitem id="menu_assetflow_asset_board"
+              name="Asset Board"
+              parent="assetflow.menu_assetflow_operations"
+              action="assetflow.action_dashboard"
+              sequence="5"/>
+
+    <!-- ================================================================== -->
+    <!--  SCREEN 3 — ORGANIZATION SETUP (admin only)                         -->
+    <!-- ================================================================== -->
+    <record id="view_assetflow_org_setup_form" model="ir.ui.view">
+        <field name="name">assetflow.org.setup.form</field>
+        <field name="model">assetflow.org.setup</field>
+        <field name="arch" type="xml">
+            <form string="Organization Setup" create="false" edit="true">
+                <sheet>
+                    <div class="oe_title mb-3">
+                        <h1>Organization Setup</h1>
+                    </div>
+                    <notebook>
+                        <page string="Departments" name="departments">
+                            <field name="department_ids" nolabel="1">
+                                <tree editable="bottom">
+                                    <field name="name" string="Department"/>
+                                    <field name="manager_id" string="Head"
+                                           widget="many2one_avatar_user"/>
+                                    <field name="parent_id" string="Parent Dept"/>
+                                    <field name="state" widget="badge"
+                                           decoration-success="state == 'active'"
+                                           decoration-danger="state == 'inactive'"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="Categories" name="categories">
+                            <field name="category_ids" nolabel="1">
+                                <tree editable="bottom">
+                                    <field name="name" string="Category"/>
+                                    <field name="code"/>
+                                    <field name="warranty_required"/>
+                                    <field name="warranty_period"
+                                           string="Warranty (Months)"/>
+                                    <field name="bookable_by_default"
+                                           string="Shared By Default"/>
+                                    <field name="depreciation_years"
+                                           string="Lifetime (Years)"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="Employees" name="employees">
+                            <p class="text-muted">
+                                This is where an administrator raises somebody
+                                above Employee. Roles chain: Employee ⊂
+                                Department Head ⊂ Asset Manager ⊂ Administrator.
+                            </p>
+                            <field name="employee_ids" nolabel="1">
+                                <tree editable="bottom" create="false" delete="false">
+                                    <field name="name" readonly="1"/>
+                                    <field name="login" string="Email" readonly="1"/>
+                                    <field name="job_title"/>
+                                    <field name="department_id"/>
+                                    <field name="assetflow_role" string="Role"
+                                           widget="badge"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                    <div class="alert alert-info mt-3" role="alert">
+                        <i class="fa fa-info-circle me-2" title="Note"/>
+                        Editing a department here also drives the picklist on the
+                        Allocation and Resource Booking screens.
+                    </div>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_assetflow_org_setup" model="ir.actions.act_window">
+        <field name="name">Organization Setup</field>
+        <field name="res_model">assetflow.org.setup</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="view_assetflow_org_setup_form"/>
+        <field name="target">inline</field>
+    </record>
+
+    <menuitem id="menu_assetflow_org_setup"
+              name="Organization Setup"
+              parent="assetflow.menu_assetflow_configuration"
+              action="action_assetflow_org_setup"
+              sequence="5"
+              groups="assetflow.group_assetflow_admin"/>
+
+    <!-- ================================================================== -->
+    <!--  SCREEN 9 — REPORTS &amp; ANALYTICS                                 -->
+    <!-- ================================================================== -->
+    <record id="view_assetflow_analytics_form" model="ir.ui.view">
+        <field name="name">assetflow.analytics.form</field>
+        <field name="model">assetflow.analytics</field>
+        <field name="arch" type="xml">
+            <form string="Reports &amp; Analytics" create="false" edit="false">
+                <sheet>
+                    <div class="oe_title mb-3">
+                        <h1>Reports &amp; Analytics</h1>
+                    </div>
+
+                    <div class="row g-3 mb-4">
+                        <div class="col-12 col-lg-6">
+                            <div class="card h-100 border-0 shadow-sm">
+                                <div class="card-body">
+                                    <h5 class="card-title">Utilization by Department</h5>
+                                    <p class="text-muted small mb-2">
+                                        Assets currently allocated, per department.
+                                    </p>
+                                    <field name="utilization_chart" nolabel="1"
+                                           readonly="1" widget="html"/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-lg-6">
+                            <div class="card h-100 border-0 shadow-sm">
+                                <div class="card-body">
+                                    <h5 class="card-title">Maintenance Frequency</h5>
+                                    <p class="text-muted small mb-2">
+                                        Requests raised per month, last six months.
+                                    </p>
+                                    <field name="maintenance_chart" nolabel="1"
+                                           readonly="1" widget="html"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Plain divs, not <group>: a group would squeeze these
+                         lists into a narrow value column and wrap every word. -->
+                    <div class="row g-4">
+                        <div class="col-12 col-lg-6">
+                            <h5 class="text-uppercase text-muted small mb-2">Most Used Assets</h5>
+                            <field name="most_used_html" nolabel="1" readonly="1"
+                                   class="w-100 d-block mb-4"/>
+                            <h5 class="text-uppercase text-muted small mb-2">Due for Maintenance / Nearing Retirement</h5>
+                            <field name="due_maintenance_html" nolabel="1" readonly="1"
+                                   class="w-100 d-block"/>
+                        </div>
+                        <div class="col-12 col-lg-6">
+                            <h5 class="text-uppercase text-muted small mb-2">Idle Assets</h5>
+                            <field name="idle_html" nolabel="1" readonly="1"
+                                   class="w-100 d-block"/>
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <button name="action_export_report" type="object"
+                                string="Export Report" class="btn btn-primary"
+                                icon="fa-download"/>
+                    </div>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_assetflow_analytics" model="ir.actions.act_window">
+        <field name="name">Reports</field>
+        <field name="res_model">assetflow.analytics</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="view_assetflow_analytics_form"/>
+        <field name="target">inline</field>
+    </record>
+
+    <menuitem id="menu_assetflow_reports"
+              name="Reports"
+              parent="assetflow.menu_assetflow_root"
+              action="action_assetflow_analytics"
+              sequence="30"
+              groups="assetflow.group_assetflow_manager"/>
+
+    <!-- ================================================================== -->
+    <!--  SCREEN 10 — NOTIFICATIONS                                          -->
+    <!-- ================================================================== -->
+    <record id="view_assetflow_notification_tree" model="ir.ui.view">
+        <field name="name">assetflow.log.notification.tree</field>
+        <field name="model">assetflow.log</field>
+        <field name="arch" type="xml">
+            <tree string="Notifications" create="false" edit="false" delete="false"
+                  decoration-danger="notif_category == 'alert'"
+                  decoration-success="notif_category == 'approval'"
+                  decoration-info="notif_category == 'booking'">
+                <field name="icon" widget="char" optional="hide"/>
+                <field name="notif_category" widget="badge" string="Type"/>
+                <field name="body" string="Notification"/>
+                <field name="res_name" string="Record" optional="show"/>
+                <field name="author_id" string="By"
+                       widget="many2one_avatar_user" optional="show"/>
+                <field name="time_ago" string="When"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_assetflow_notification_search" model="ir.ui.view">
+        <field name="name">assetflow.log.notification.search</field>
+        <field name="model">assetflow.log</field>
+        <field name="arch" type="xml">
+            <search string="Notifications">
+                <field name="body" string="Notification"/>
+                <field name="res_name" string="Record"/>
+                <field name="author_id"/>
+                <!-- The four tabs from the wireframe. "All" is simply no filter. -->
+                <filter name="tab_alerts" string="Alerts"
+                        domain="[('notif_category', '=', 'alert')]"/>
+                <filter name="tab_approvals" string="Approvals"
+                        domain="[('notif_category', '=', 'approval')]"/>
+                <filter name="tab_bookings" string="Bookings"
+                        domain="[('notif_category', '=', 'booking')]"/>
+                <separator/>
+                <filter name="tab_mine" string="My Notifications"
+                        domain="[('author_id', '=', uid)]"/>
+                <group expand="0" string="Group By">
+                    <filter name="group_category" string="Type"
+                            context="{'group_by': 'notif_category'}"/>
+                    <filter name="group_day" string="Day"
+                            context="{'group_by': 'create_date:day'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_assetflow_notifications" model="ir.actions.act_window">
+        <field name="name">Notifications</field>
+        <field name="res_model">assetflow.log</field>
+        <field name="view_mode">tree,form</field>
+        <field name="view_id" ref="view_assetflow_notification_tree"/>
+        <field name="search_view_id" ref="view_assetflow_notification_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No notifications yet</p>
+            <p>Allocations, approvals, bookings and audit findings show up here
+               as they happen.</p>
+        </field>
+    </record>
+
+    <menuitem id="menu_assetflow_notifications"
+              name="Notifications"
+              parent="assetflow.menu_assetflow_root"
+              action="action_assetflow_notifications"
+              sequence="25"/>
+
+    <!-- ================================================================== -->
+    <!--  SCREEN 7 — the new 'Technician Assigned' stage                     -->
+    <!-- ================================================================== -->
+    <record id="view_maintenance_form_technician" model="ir.ui.view">
+        <field name="name">assetflow.maintenance.form.technician</field>
+        <field name="model">assetflow.maintenance</field>
+        <field name="inherit_id" ref="assetflow.view_maintenance_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//button[@name='action_start']" position="before">
+                <button name="action_assign_technician" type="object"
+                        string="Assign Technician" class="btn-primary"
+                        invisible="state != 'approved'"/>
+            </xpath>
+            <!-- Work can now start from either 'approved' or 'technician_assigned'. -->
+            <xpath expr="//button[@name='action_start']" position="attributes">
+                <attribute name="invisible">state not in ('approved', 'technician_assigned')</attribute>
+                <attribute name="class">btn-secondary</attribute>
+            </xpath>
+            <xpath expr="//button[@name='action_resolve']" position="attributes">
+                <attribute name="invisible">state not in ('approved', 'technician_assigned', 'in_progress')</attribute>
+            </xpath>
+            <xpath expr="//button[@name='action_log_work']" position="attributes">
+                <attribute name="invisible">state not in ('approved', 'technician_assigned', 'in_progress')</attribute>
+            </xpath>
+            <xpath expr="//field[@name='state'][@widget='statusbar']" position="attributes">
+                <attribute name="statusbar_visible">pending,approved,technician_assigned,in_progress,resolved</attribute>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- ================================================================== -->
+    <!--  SCREEN 4 — search by tag, serial or QR code                        -->
+    <!-- ================================================================== -->
+    <record id="view_asset_search_qr" model="ir.ui.view">
+        <field name="name">assetflow.asset.search.qr</field>
+        <field name="model">assetflow.asset</field>
+        <field name="inherit_id" ref="assetflow.view_asset_search"/>
+        <field name="arch" type="xml">
+            <xpath expr="//search" position="inside">
+                <field name="qr_code" string="QR / Barcode"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_asset_form_qr" model="ir.ui.view">
+        <field name="name">assetflow.asset.form.qr</field>
+        <field name="model">assetflow.asset</field>
+        <field name="inherit_id" ref="assetflow.view_asset_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='serial_number']" position="after">
+                <field name="qr_code"/>
+            </xpath>
+            <xpath expr="//field[@name='location']" position="after">
+                <field name="next_service_date"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

@@ -63,6 +63,66 @@ class AssetflowLog(models.Model):
         default='system', required=True, index=True)
     color = fields.Integer(compute='_compute_color')
 
+    # -- notification framing (Screen 10) --------------------------------
+    notif_category = fields.Selection(
+        [('alert', 'Alert'),
+         ('approval', 'Approval'),
+         ('booking', 'Booking'),
+         ('other', 'Other')],
+        string='Category', compute='_compute_notif_category',
+        store=True, index=True,
+        help="Which notification tab this entry belongs under.")
+    icon = fields.Char(compute='_compute_notif_category', store=True)
+    time_ago = fields.Char(
+        string='When', compute='_compute_time_ago',
+        help="Relative age, e.g. '2m ago'. Never stored: it is derived from "
+             "now(), which moves on its own.")
+
+    # Words that mean "something needs a human to look at it".
+    _ALERT_WORDS = ('overdue', 'missing', 'damaged', 'lost', 'discrepanc',
+                    'conflict', 'rejected')
+    _APPROVAL_WORDS = ('approved', 'requested', 'transferred', 'handed over',
+                       'submitted')
+
+    @api.depends('log_type', 'body')
+    def _compute_notif_category(self):
+        for entry in self:
+            body = (entry.body or '').lower()
+            if entry.log_type == 'booking':
+                category, icon = 'booking', 'fa-calendar'
+            elif any(word in body for word in self._ALERT_WORDS):
+                category, icon = 'alert', 'fa-exclamation-triangle'
+            elif any(word in body for word in self._APPROVAL_WORDS):
+                category, icon = 'approval', 'fa-check-circle'
+            elif entry.log_type == 'audit':
+                category, icon = 'alert', 'fa-clipboard'
+            elif entry.log_type == 'maintenance':
+                category, icon = 'approval', 'fa-wrench'
+            else:
+                category, icon = 'other', 'fa-circle-o'
+            entry.notif_category = category
+            entry.icon = icon
+
+    def _compute_time_ago(self):
+        now = fields.Datetime.now()
+        for entry in self:
+            if not entry.create_date:
+                entry.time_ago = ''
+                continue
+            seconds = (now - entry.create_date).total_seconds()
+            minutes, hours = seconds / 60, seconds / 3600
+            days = seconds / 86400
+            if minutes < 1:
+                entry.time_ago = _("just now")
+            elif minutes < 60:
+                entry.time_ago = _("%sm ago", int(minutes))
+            elif hours < 24:
+                entry.time_ago = _("%sh ago", int(hours))
+            elif days < 7:
+                entry.time_ago = _("%sd ago", int(days))
+            else:
+                entry.time_ago = _("%sw ago", int(days / 7))
+
     @api.depends('res_model', 'res_id')
     def _compute_record_ref(self):
         for entry in self:

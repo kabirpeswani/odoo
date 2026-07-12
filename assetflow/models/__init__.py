@@ -6,3 +6,4 @@ from . import asset_allocation
 from . import resource_booking
 from . import asset_maintenance
 from . import asset_audit
+from . import assetflow_screens

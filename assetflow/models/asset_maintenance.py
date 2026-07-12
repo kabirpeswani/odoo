@@ -68,9 +68,10 @@ class AssetflowMaintenance(models.Model):
     state = fields.Selection(
         [('pending', 'Pending Approval'),
          ('approved', 'Approved'),
-         ('rejected', 'Rejected'),
+         ('technician_assigned', 'Technician Assigned'),
          ('in_progress', 'In Progress'),
-         ('resolved', 'Resolved')],
+         ('resolved', 'Resolved'),
+         ('rejected', 'Rejected')],
         default='pending', required=True, index=True,
         group_expand='_group_expand_state')
     color = fields.Integer(compute='_compute_color', store=True)
@@ -97,7 +98,11 @@ class AssetflowMaintenance(models.Model):
     # ------------------------------------------------------------------
     @api.model
     def _group_expand_state(self, states, domain, order=None):
-        return [key for key, _label in self._fields['state'].selection]
+        # The board is the five-stage happy path. 'Rejected' is deliberately not
+        # forced open: it is a dead end, not a stage work flows through, so it
+        # only appears as a column once something has actually been rejected.
+        return [key for key, _label in self._fields['state'].selection
+                if key != 'rejected']
 
     @api.depends('priority')
     def _compute_color(self):
@@ -129,9 +134,10 @@ class AssetflowMaintenance(models.Model):
     @api.constrains('state', 'technician_id')
     def _check_technician_assigned(self):
         for request in self:
-            if request.state == 'in_progress' and not request.technician_id:
+            if (request.state in ('technician_assigned', 'in_progress')
+                    and not request.technician_id):
                 raise ValidationError(_(
-                    "Assign a technician before starting the work on '%s'.",
+                    "Assign a technician before moving '%s' past approval.",
                     request.name))
 
     # ------------------------------------------------------------------
@@ -199,9 +205,29 @@ class AssetflowMaintenance(models.Model):
                 user=self.env.user.name, reason=request.rejection_reason), 'maintenance')
         return True
 
-    def action_start(self):
+    def action_assign_technician(self):
+        """Approved → Technician Assigned.
+
+        The asset is already off the floor at this point (approval did that);
+        this stage only records who is going to do the work.
+        """
         for request in self:
             if request.state != 'approved':
+                raise UserError(_(
+                    "A technician can only be assigned to an approved request."))
+            if not request.technician_id:
+                raise UserError(_(
+                    "Pick a technician for %s before assigning it.",
+                    request.name))
+            request.write({'state': 'technician_assigned'})
+            request._log(_(
+                "Technician assigned: %s.", request.technician_id.name),
+                'maintenance')
+        return True
+
+    def action_start(self):
+        for request in self:
+            if request.state not in ('approved', 'technician_assigned'):
                 raise UserError(_(
                     "The request must be approved before work can start."))
             if not request.technician_id:
@@ -210,11 +236,15 @@ class AssetflowMaintenance(models.Model):
                 'state': 'in_progress',
                 'start_date': fields.Datetime.now(),
             })
+            request._log(_(
+                "Work started by %s.", request.technician_id.name),
+                'maintenance')
         return True
 
     def action_resolve(self):
         for request in self:
-            if request.state not in ('approved', 'in_progress'):
+            if request.state not in ('approved', 'technician_assigned',
+                                     'in_progress'):
                 raise UserError(_(
                     "Only an approved or in-progress request can be resolved."))
             request.write({

@@ -45,6 +45,12 @@ No accounting, purchase or invoicing dependencies.
         'views/assetflow_menus_views.xml',
         # The audit trail. Loads last: it inherits the forms defined above.
         'views/assetflow_log_views.xml',
+        # Dashboard, Organization Setup, Reports, Notifications. Also inherits
+        # the forms above, so it must come after them.
+        'views/assetflow_screens_views.xml',
+    ],
+    'demo': [
+        'data/assetflow_demo.xml',
     ],
     'assets': {
         'web.assets_backend': [

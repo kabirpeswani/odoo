@@ -1,0 +1,479 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!-- ============================================================ -->
+        <!--  Departments (Screen 3)                                       -->
+        <!-- ============================================================ -->
+        <record id="demo_dept_engineering" model="assetflow.department">
+            <field name="name">Engineering</field>
+            <field name="code">ENG</field>
+            <field name="state">active</field>
+        </record>
+        <record id="demo_dept_facilities" model="assetflow.department">
+            <field name="name">Facilities</field>
+            <field name="code">FAC</field>
+            <field name="state">active</field>
+        </record>
+        <record id="demo_dept_fieldops" model="assetflow.department">
+            <field name="name">Field Ops</field>
+            <field name="code">FO</field>
+            <field name="state">active</field>
+        </record>
+        <record id="demo_dept_fieldops_west" model="assetflow.department">
+            <field name="name">Field Ops (West)</field>
+            <field name="code">FO-W</field>
+            <field name="parent_id" ref="demo_dept_fieldops"/>
+            <field name="state">inactive</field>
+        </record>
+        <record id="demo_dept_it" model="assetflow.department">
+            <field name="name">IT</field>
+            <field name="code">IT</field>
+            <field name="state">active</field>
+        </record>
+
+        <!-- ============================================================ -->
+        <!--  Categories                                                   -->
+        <!-- ============================================================ -->
+        <record id="demo_cat_electronics" model="assetflow.asset.category">
+            <field name="name">Electronics</field>
+            <field name="code">ELEC</field>
+            <field name="warranty_required" eval="True"/>
+            <field name="warranty_period">24</field>
+            <field name="depreciation_years">5</field>
+        </record>
+        <record id="demo_cat_furniture" model="assetflow.asset.category">
+            <field name="name">Furniture</field>
+            <field name="code">FURN</field>
+            <field name="depreciation_years">10</field>
+        </record>
+        <record id="demo_cat_rooms" model="assetflow.asset.category">
+            <field name="name">Meeting Rooms</field>
+            <field name="code">ROOM</field>
+            <field name="bookable_by_default" eval="True"/>
+        </record>
+        <record id="demo_cat_vehicles" model="assetflow.asset.category">
+            <field name="name">Vehicles</field>
+            <field name="code">VEH</field>
+            <field name="bookable_by_default" eval="True"/>
+            <field name="depreciation_years">8</field>
+        </record>
+
+        <!-- ============================================================ -->
+        <!--  Employees                                                    -->
+        <!-- ============================================================ -->
+        <record id="demo_user_priya" model="res.users">
+            <field name="name">Priya Shah</field>
+            <field name="login">priya</field>
+            <field name="password">priya</field>
+            <field name="job_title">Software Engineer</field>
+            <field name="department_id" ref="demo_dept_engineering"/>
+        </record>
+        <record id="demo_user_aditi" model="res.users">
+            <field name="name">Aditi Rao</field>
+            <field name="login">aditi</field>
+            <field name="password">aditi</field>
+            <field name="job_title">Head of Engineering</field>
+            <field name="department_id" ref="demo_dept_engineering"/>
+        </record>
+        <record id="demo_user_rohan" model="res.users">
+            <field name="name">Rohan Mehta</field>
+            <field name="login">rohan</field>
+            <field name="password">rohan</field>
+            <field name="job_title">Facilities Manager</field>
+            <field name="department_id" ref="demo_dept_facilities"/>
+        </record>
+        <record id="demo_user_sana" model="res.users">
+            <field name="name">Sana Iqbal</field>
+            <field name="login">sana</field>
+            <field name="password">sana</field>
+            <field name="job_title">Field Ops Lead</field>
+            <field name="department_id" ref="demo_dept_fieldops"/>
+        </record>
+        <record id="demo_user_arjun" model="res.users">
+            <field name="name">Arjun Nair</field>
+            <field name="login">arjun</field>
+            <field name="password">arjun</field>
+            <field name="job_title">Analyst</field>
+            <field name="department_id" ref="demo_dept_it"/>
+        </record>
+        <record id="demo_user_varma" model="res.users">
+            <field name="name">R. Varma</field>
+            <field name="login">varma</field>
+            <field name="password">varma</field>
+            <field name="job_title">Maintenance Technician</field>
+            <field name="department_id" ref="demo_dept_facilities"/>
+        </record>
+
+        <!-- Department heads, and the two roles above Employee. -->
+        <record id="demo_dept_engineering" model="assetflow.department">
+            <field name="manager_id" ref="demo_user_aditi"/>
+        </record>
+        <record id="demo_dept_facilities" model="assetflow.department">
+            <field name="manager_id" ref="demo_user_rohan"/>
+        </record>
+        <record id="demo_dept_fieldops_west" model="assetflow.department">
+            <field name="manager_id" ref="demo_user_sana"/>
+        </record>
+        <record id="demo_user_rohan" model="res.users">
+            <field name="groups_id" eval="[(4, ref('assetflow.group_assetflow_manager'))]"/>
+        </record>
+        <record id="demo_user_aditi" model="res.users">
+            <field name="groups_id" eval="[(4, ref('assetflow.group_assetflow_dept_head'))]"/>
+        </record>
+
+        <!-- ============================================================ -->
+        <!--  Assets (Screen 4)                                            -->
+        <!-- ============================================================ -->
+        <record id="demo_asset_laptop_0012" model="assetflow.asset">
+            <field name="asset_tag">AF-0012</field>
+            <field name="name">Dell Laptop</field>
+            <field name="category_id" ref="demo_cat_electronics"/>
+            <field name="serial_number">DL-7420-0012</field>
+            <field name="qr_code">QR-AF-0012</field>
+            <field name="location">Bengaluru</field>
+            <field name="acquisition_cost">85000</field>
+            <field name="acquisition_date" eval="(DateTime.today() - relativedelta(months=14))"/>
+            <field name="state">allocated</field>
+        </record>
+
+        <record id="demo_asset_projector_0062" model="assetflow.asset">
+            <field name="asset_tag">AF-0062</field>
+            <field name="name">Projector</field>
+            <field name="category_id" ref="demo_cat_electronics"/>
+            <field name="serial_number">EPS-X49-0062</field>
+            <field name="qr_code">QR-AF-0062</field>
+            <field name="location">HQ Floor 2</field>
+            <field name="acquisition_cost">42000</field>
+            <field name="acquisition_date" eval="(DateTime.today() - relativedelta(months=20))"/>
+            <field name="state">maintenance</field>
+        </record>
+
+        <record id="demo_asset_chair_2201" model="assetflow.asset">
+            <field name="asset_tag">AF-2201</field>
+            <field name="name">Office Chair</field>
+            <field name="category_id" ref="demo_cat_furniture"/>
+            <field name="qr_code">QR-AF-2201</field>
+            <field name="location">Warehouse</field>
+            <field name="acquisition_cost">7500</field>
+            <field name="acquisition_date" eval="(DateTime.today() - relativedelta(months=6))"/>
+            <field name="state">available</field>
+        </record>
+
+        <!-- The asset at the centre of the Screen 5 conflict. -->
+        <record id="demo_asset_laptop_0114" model="assetflow.asset">
+            <field name="asset_tag">AF-0114</field>
+            <field name="name">Dell Laptop</field>
+            <field name="category_id" ref="demo_cat_electronics"/>
+            <field name="serial_number">DL-7420-0114</field>
+            <field name="qr_code">QR-AF-0114</field>
+            <field name="location">Bengaluru</field>
+            <field name="acquisition_cost">85000</field>
+            <field name="acquisition_date" eval="(DateTime.today() - relativedelta(months=10))"/>
+            <field name="state">allocated</field>
+        </record>
+
+        <!-- Screen 6: the bookable room. -->
+        <record id="demo_asset_room_b2" model="assetflow.asset">
+            <field name="asset_tag">AF-B002</field>
+            <field name="name">Conference Room B2</field>
+            <field name="category_id" ref="demo_cat_rooms"/>
+            <field name="location">HQ Floor 1</field>
+            <field name="bookable" eval="True"/>
+            <field name="state">available</field>
+        </record>
+
+        <!-- Screen 7: one asset per maintenance stage. -->
+        <record id="demo_asset_ac_0003" model="assetflow.asset">
+            <field name="asset_tag">AF-0003</field>
+            <field name="name">AC Unit</field>
+            <field name="category_id" ref="demo_cat_electronics"/>
+            <field name="location">HQ Floor 1</field>
+            <field name="acquisition_date" eval="(DateTime.today() - relativedelta(months=30))"/>
+            <field name="state">maintenance</field>
+        </record>
+        <record id="demo_asset_forklift_0078" model="assetflow.asset">
+            <field name="asset_tag">AF-0078</field>
+            <field name="name">Forklift</field>
+            <field name="category_id" ref="demo_cat_vehicles"/>
+            <field name="location">Warehouse</field>
+            <field name="acquisition_date" eval="(DateTime.today() - relativedelta(months=40))"/>
+            <field name="state">maintenance</field>
+        </record>
+        <record id="demo_asset_printer_8117" model="assetflow.asset">
+            <field name="asset_tag">AF-8117</field>
+            <field name="name">Printer</field>
+            <field name="category_id" ref="demo_cat_electronics"/>
+            <field name="location">HQ Floor 2</field>
+            <field name="acquisition_date" eval="(DateTime.today() - relativedelta(months=18))"/>
+            <field name="state">maintenance</field>
+        </record>
+        <record id="demo_asset_chair_4173" model="assetflow.asset">
+            <field name="asset_tag">AF-4173</field>
+            <field name="name">Chair</field>
+            <field name="category_id" ref="demo_cat_furniture"/>
+            <field name="location">HQ Floor 2</field>
+            <field name="acquisition_date" eval="(DateTime.today() - relativedelta(months=9))"/>
+            <field name="state">available</field>
+        </record>
+
+        <!-- Screen 8: the two discrepancies. -->
+        <record id="demo_asset_chair_9921" model="assetflow.asset">
+            <field name="asset_tag">AF-9921</field>
+            <field name="name">Office Chair</field>
+            <field name="category_id" ref="demo_cat_furniture"/>
+            <field name="location">Desk E14</field>
+            <field name="acquisition_date" eval="(DateTime.today() - relativedelta(months=22))"/>
+            <field name="state">available</field>
+        </record>
+        <record id="demo_asset_monitor_4828" model="assetflow.asset">
+            <field name="asset_tag">AF-4828</field>
+            <field name="name">Monitor</field>
+            <field name="category_id" ref="demo_cat_electronics"/>
+            <field name="location">Desk E15</field>
+            <field name="acquisition_date" eval="(DateTime.today() - relativedelta(months=16))"/>
+            <field name="state">available</field>
+        </record>
+
+        <!-- Screen 9: assets that drive the insight lists. -->
+        <record id="demo_asset_van_392" model="assetflow.asset">
+            <field name="asset_tag">AF-0392</field>
+            <field name="name">Delivery Van</field>
+            <field name="category_id" ref="demo_cat_vehicles"/>
+            <field name="location">Warehouse</field>
+            <field name="bookable" eval="True"/>
+            <field name="acquisition_date" eval="(DateTime.today() - relativedelta(months=26))"/>
+        </record>
+        <record id="demo_asset_forklift_0047" model="assetflow.asset">
+            <field name="asset_tag">AF-0047</field>
+            <field name="name">Forklift (Yard)</field>
+            <field name="category_id" ref="demo_cat_vehicles"/>
+            <field name="location">Warehouse</field>
+            <!-- Service due in five days: drives the "due for maintenance" list. -->
+            <field name="next_service_date" eval="(DateTime.today() + relativedelta(days=5))"/>
+            <field name="acquisition_date" eval="(DateTime.today() - relativedelta(months=35))"/>
+        </record>
+        <record id="demo_asset_laptop_0020" model="assetflow.asset">
+            <field name="asset_tag">AF-0020</field>
+            <field name="name">Laptop (Legacy)</field>
+            <field name="category_id" ref="demo_cat_electronics"/>
+            <field name="location">HQ Floor 2</field>
+            <!-- Four years old against a five-year lifetime: nearing retirement. -->
+            <field name="acquisition_date" eval="(DateTime.today() - relativedelta(years=4, months=2))"/>
+        </record>
+        <record id="demo_asset_camera_0301" model="assetflow.asset">
+            <field name="asset_tag">AF-0301</field>
+            <field name="name">Camera</field>
+            <field name="category_id" ref="demo_cat_electronics"/>
+            <field name="location">Studio</field>
+            <!-- Acquired long ago and never touched since: idle 60+ days. -->
+            <field name="acquisition_date" eval="(DateTime.today() - relativedelta(days=75))"/>
+        </record>
+        <record id="demo_asset_chair_0910" model="assetflow.asset">
+            <field name="asset_tag">AF-0910</field>
+            <field name="name">Chair (Spare)</field>
+            <field name="category_id" ref="demo_cat_furniture"/>
+            <field name="location">Warehouse</field>
+            <field name="acquisition_date" eval="(DateTime.today() - relativedelta(days=95))"/>
+        </record>
+
+        <!-- ============================================================ -->
+        <!--  Allocations (Screens 2 & 5)                                  -->
+        <!-- ============================================================ -->
+        <!-- AF-0114 is held by Priya Shah — this is the record that makes the
+             Screen 5 conflict warning fire when you try to re-allocate it. -->
+        <record id="demo_alloc_0114_priya" model="assetflow.asset.allocation">
+            <field name="name">ALLOC/DEMO/0114</field>
+            <field name="asset_id" ref="demo_asset_laptop_0114"/>
+            <field name="employee_id" ref="demo_user_priya"/>
+            <field name="department_id" ref="demo_dept_engineering"/>
+            <field name="allocation_date" eval="(DateTime.today() - relativedelta(months=4))"/>
+            <field name="state">approved</field>
+        </record>
+
+        <!-- AF-0012 is with Arjun, and it is overdue: this is what lights up
+             the red banner on the dashboard. -->
+        <record id="demo_alloc_0012_arjun" model="assetflow.asset.allocation">
+            <field name="name">ALLOC/DEMO/0012</field>
+            <field name="asset_id" ref="demo_asset_laptop_0012"/>
+            <field name="employee_id" ref="demo_user_arjun"/>
+            <field name="department_id" ref="demo_dept_it"/>
+            <field name="allocation_date" eval="(DateTime.today() - relativedelta(months=2))"/>
+            <field name="expected_return_date" eval="(DateTime.today() - relativedelta(days=3))"/>
+            <field name="state">overdue</field>
+        </record>
+
+        <!-- A pending transfer, for the "Pending Transfers" KPI. -->
+        <record id="demo_transfer_0114" model="assetflow.asset.allocation">
+            <field name="name">TRF/DEMO/0114</field>
+            <field name="asset_id" ref="demo_asset_laptop_0114"/>
+            <field name="employee_id" ref="demo_user_arjun"/>
+            <field name="department_id" ref="demo_dept_it"/>
+            <field name="is_transfer" eval="True"/>
+            <field name="previous_allocation_id" ref="demo_alloc_0114_priya"/>
+            <field name="transfer_reason">Priya is rotating off the project.</field>
+            <field name="state">requested</field>
+        </record>
+
+        <!-- ============================================================ -->
+        <!--  Bookings (Screens 2 & 6)                                     -->
+        <!-- ============================================================ -->
+        <record id="demo_booking_b2_proc" model="assetflow.resource.booking">
+            <field name="name">BKG/DEMO/0001</field>
+            <field name="asset_id" ref="demo_asset_room_b2"/>
+            <field name="user_id" ref="demo_user_rohan"/>
+            <field name="purpose">Procurement Team</field>
+            <field name="start_time" eval="(DateTime.today() + relativedelta(days=1, hour=9, minute=0, second=0, microsecond=0))"/>
+            <field name="end_time" eval="(DateTime.today() + relativedelta(days=1, hour=10, minute=0, second=0, microsecond=0))"/>
+        </record>
+        <record id="demo_booking_b2_design" model="assetflow.resource.booking">
+            <field name="name">BKG/DEMO/0002</field>
+            <field name="asset_id" ref="demo_asset_room_b2"/>
+            <field name="user_id" ref="demo_user_priya"/>
+            <field name="purpose">Design Review</field>
+            <field name="start_time" eval="(DateTime.today() + relativedelta(days=1, hour=14, minute=0, second=0, microsecond=0))"/>
+            <field name="end_time" eval="(DateTime.today() + relativedelta(days=1, hour=15, minute=0, second=0, microsecond=0))"/>
+        </record>
+        <record id="demo_booking_van" model="assetflow.resource.booking">
+            <field name="name">BKG/DEMO/0003</field>
+            <field name="asset_id" ref="demo_asset_van_392"/>
+            <field name="user_id" ref="demo_user_sana"/>
+            <field name="purpose">Site delivery</field>
+            <field name="start_time" eval="(DateTime.today() + relativedelta(days=2, hour=8, minute=0, second=0, microsecond=0))"/>
+            <field name="end_time" eval="(DateTime.today() + relativedelta(days=2, hour=12, minute=0, second=0, microsecond=0))"/>
+        </record>
+
+        <!-- ============================================================ -->
+        <!--  Maintenance — one card per kanban column (Screen 7)          -->
+        <!-- ============================================================ -->
+        <record id="demo_mnt_pending" model="assetflow.maintenance">
+            <field name="name">MNT/DEMO/0062</field>
+            <field name="asset_id" ref="demo_asset_projector_0062"/>
+            <field name="requester_id" ref="demo_user_priya"/>
+            <field name="description">Projector bulb not turning on.</field>
+            <field name="priority">2</field>
+            <field name="state">pending</field>
+        </record>
+        <record id="demo_mnt_approved" model="assetflow.maintenance">
+            <field name="name">MNT/DEMO/0003</field>
+            <field name="asset_id" ref="demo_asset_ac_0003"/>
+            <field name="requester_id" ref="demo_user_rohan"/>
+            <field name="description">AC unit: noisy compressor.</field>
+            <field name="priority">1</field>
+            <field name="state">approved</field>
+            <field name="asset_previous_state">available</field>
+        </record>
+        <record id="demo_mnt_technician" model="assetflow.maintenance">
+            <field name="name">MNT/DEMO/0078</field>
+            <field name="asset_id" ref="demo_asset_forklift_0078"/>
+            <field name="requester_id" ref="demo_user_sana"/>
+            <field name="technician_id" ref="demo_user_varma"/>
+            <field name="description">Forklift hydraulics leaking.</field>
+            <field name="priority">2</field>
+            <field name="state">technician_assigned</field>
+            <field name="asset_previous_state">available</field>
+        </record>
+        <record id="demo_mnt_in_progress" model="assetflow.maintenance">
+            <field name="name">MNT/DEMO/8117</field>
+            <field name="asset_id" ref="demo_asset_printer_8117"/>
+            <field name="requester_id" ref="demo_user_arjun"/>
+            <field name="technician_id" ref="demo_user_varma"/>
+            <field name="description">Printer jam — parts ordered.</field>
+            <field name="priority">1</field>
+            <field name="state">in_progress</field>
+            <field name="asset_previous_state">available</field>
+        </record>
+        <record id="demo_mnt_resolved" model="assetflow.maintenance">
+            <field name="name">MNT/DEMO/4173</field>
+            <field name="asset_id" ref="demo_asset_chair_4173"/>
+            <field name="requester_id" ref="demo_user_rohan"/>
+            <field name="technician_id" ref="demo_user_varma"/>
+            <field name="description">Chair repair.</field>
+            <field name="priority">0</field>
+            <field name="state">resolved</field>
+            <field name="resolution_notes">Gas lift replaced.</field>
+        </record>
+
+        <!-- ============================================================ -->
+        <!--  Audit cycle with two discrepancies (Screen 8)                -->
+        <!-- ============================================================ -->
+        <record id="demo_audit_q3" model="assetflow.audit.cycle">
+            <field name="name">Q3 Audit: Engineering Dept</field>
+            <field name="reference">AUD/DEMO/001</field>
+            <field name="scope">department</field>
+            <field name="department_id" ref="demo_dept_engineering"/>
+            <field name="date_start" eval="(DateTime.today() - relativedelta(days=4))"/>
+            <field name="date_end" eval="(DateTime.today() + relativedelta(days=10))"/>
+            <field name="auditor_ids" eval="[(6, 0, [ref('demo_user_aditi'), ref('demo_user_sana')])]"/>
+            <field name="state">discrepancy_found</field>
+        </record>
+
+        <record id="demo_audit_line_verified" model="assetflow.audit.line">
+            <field name="cycle_id" ref="demo_audit_q3"/>
+            <field name="asset_id" ref="demo_asset_laptop_0012"/>
+            <field name="actual_location">Desk E12</field>
+            <field name="result">verified</field>
+            <field name="auditor_id" ref="demo_user_aditi"/>
+        </record>
+        <record id="demo_audit_line_missing" model="assetflow.audit.line">
+            <field name="cycle_id" ref="demo_audit_q3"/>
+            <field name="asset_id" ref="demo_asset_chair_9921"/>
+            <field name="result">missing</field>
+            <field name="notes">Not at Desk E14; nobody has seen it.</field>
+            <field name="auditor_id" ref="demo_user_sana"/>
+        </record>
+        <record id="demo_audit_line_damaged" model="assetflow.audit.line">
+            <field name="cycle_id" ref="demo_audit_q3"/>
+            <field name="asset_id" ref="demo_asset_monitor_4828"/>
+            <field name="result">damaged</field>
+            <field name="notes">Cracked panel, bottom-left.</field>
+            <field name="auditor_id" ref="demo_user_aditi"/>
+        </record>
+
+        <!-- ============================================================ -->
+        <!--  Notifications (Screen 10)                                    -->
+        <!--                                                               -->
+        <!--  The workflows write their own entries as they run, but this  -->
+        <!--  demo data sets the states directly, so the two events that   -->
+        <!--  land in the Alerts tab never actually happened. Write them   -->
+        <!--  explicitly, otherwise the tab is empty. notif_category is     -->
+        <!--  computed from the wording, so these file themselves.         -->
+        <!-- ============================================================ -->
+        <record id="demo_log_overdue" model="assetflow.log">
+            <field name="res_model">assetflow.asset.allocation</field>
+            <field name="res_id" ref="demo_alloc_0012_arjun"/>
+            <field name="res_name">ALLOC/DEMO/0012</field>
+            <field name="body">Overdue return: AF-0012 was due 3 days ago.</field>
+            <field name="log_type">allocation</field>
+            <field name="author_id" ref="base.user_admin"/>
+        </record>
+
+        <record id="demo_log_audit_flag" model="assetflow.log">
+            <field name="res_model">assetflow.audit.cycle</field>
+            <field name="res_id" ref="demo_audit_q3"/>
+            <field name="res_name">AUD/DEMO/001</field>
+            <field name="body">Audit discrepancy flagged: AF-4828 damaged.</field>
+            <field name="log_type">audit</field>
+            <field name="author_id" ref="demo_user_aditi"/>
+        </record>
+
+        <record id="demo_log_audit_missing" model="assetflow.log">
+            <field name="res_model">assetflow.audit.cycle</field>
+            <field name="res_id" ref="demo_audit_q3"/>
+            <field name="res_name">AUD/DEMO/001</field>
+            <field name="body">Audit discrepancy flagged: AF-9921 missing.</field>
+            <field name="log_type">audit</field>
+            <field name="author_id" ref="demo_user_sana"/>
+        </record>
+
+        <record id="demo_log_transfer" model="assetflow.log">
+            <field name="res_model">assetflow.asset.allocation</field>
+            <field name="res_id" ref="demo_transfer_0114"/>
+            <field name="res_name">TRF/DEMO/0114</field>
+            <field name="body">Transfer requested: AF-0114 to Priya Shah.</field>
+            <field name="log_type">allocation</field>
+            <field name="author_id" ref="base.user_admin"/>
+        </record>
+
+    </data>
+</odoo>

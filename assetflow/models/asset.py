@@ -52,6 +52,10 @@ class AssetflowAsset(models.Model):
         index=True, default=lambda self: _('New'),
         help="Unique, auto-generated identifier, e.g. AF-0001.")
     serial_number = fields.Char(copy=False, index=True)
+    qr_code = fields.Char(
+        string='QR / Barcode', copy=False, index=True,
+        help="Scannable code on the physical asset. Searched alongside the "
+             "tag and the serial number.")
     category_id = fields.Many2one(
         'assetflow.asset.category', string='Category',
         required=True, ondelete='restrict')
@@ -130,6 +134,23 @@ class AssetflowAsset(models.Model):
     maintenance_count = fields.Integer(compute='_compute_counts')
     booking_count = fields.Integer(compute='_compute_counts')
 
+    # ------------------------------------------------------------------
+    # Analytics (Reports, screen 9)
+    # ------------------------------------------------------------------
+    next_service_date = fields.Date(
+        help="When this asset is next due for servicing.")
+    service_due_days = fields.Integer(
+        string='Service Due In (Days)', compute='_compute_service_due_days',
+        help="Negative once the service date has passed.")
+    last_activity_date = fields.Date(
+        compute='_compute_last_activity_date', store=True,
+        help="Last time the asset was allocated or booked. Stored so that "
+             "'idle for N days' is searchable.")
+    idle_days = fields.Integer(compute='_compute_idle_days')
+    age_years = fields.Float(compute='_compute_age')
+    nearing_retirement = fields.Boolean(compute='_compute_age')
+    bookings_this_month = fields.Integer(compute='_compute_bookings_this_month')
+
     company_id = fields.Many2one(
         'res.company', default=lambda self: self.env.company, required=True)
 
@@ -204,6 +225,57 @@ class AssetflowAsset(models.Model):
             asset.allocation_count = len(asset.allocation_ids)
             asset.maintenance_count = len(asset.maintenance_ids)
             asset.booking_count = len(asset.booking_ids)
+
+    # -- analytics -------------------------------------------------------
+    def _compute_service_due_days(self):
+        today = fields.Date.context_today(self)
+        for asset in self:
+            asset.service_due_days = (
+                (asset.next_service_date - today).days
+                if asset.next_service_date else 0)
+
+    @api.depends('allocation_ids.allocation_date', 'booking_ids.end_time')
+    def _compute_last_activity_date(self):
+        for asset in self:
+            dates = [d for d in asset.allocation_ids.mapped('allocation_date') if d]
+            dates += [b.date() for b in asset.booking_ids.mapped('end_time') if b]
+            asset.last_activity_date = max(dates) if dates else False
+
+    def _compute_idle_days(self):
+        """Days since the asset was last allocated or booked.
+
+        An asset that has never been used at all is idle since it was acquired
+        — otherwise brand-new stock that nobody has touched would look busy.
+        """
+        today = fields.Date.context_today(self)
+        for asset in self:
+            since = asset.last_activity_date or asset.acquisition_date
+            asset.idle_days = (today - since).days if since else 0
+
+    @api.depends('acquisition_date', 'category_id.depreciation_years')
+    def _compute_age(self):
+        today = fields.Date.context_today(self)
+        for asset in self:
+            if asset.acquisition_date:
+                asset.age_years = (today - asset.acquisition_date).days / 365.25
+            else:
+                asset.age_years = 0.0
+            lifetime = asset.category_id.depreciation_years or 0
+            # "Nearing retirement" = inside the final year of expected life.
+            asset.nearing_retirement = bool(
+                lifetime and asset.age_years >= (lifetime - 1))
+
+    def _compute_bookings_this_month(self):
+        today = fields.Date.context_today(self)
+        start = today.replace(day=1)
+        data = self.env['assetflow.resource.booking']._read_group(
+            [('asset_id', 'in', self.ids),
+             ('state', '!=', 'cancelled'),
+             ('start_time', '>=', fields.Datetime.to_datetime(start))],
+            groupby=['asset_id'], aggregates=['__count'])
+        counts = {asset.id: count for asset, count in data}
+        for asset in self:
+            asset.bookings_this_month = counts.get(asset.id, 0)
 
     @api.onchange('category_id')
     def _onchange_category_id(self):

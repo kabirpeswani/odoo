@@ -29,3 +29,6 @@ access_maintenance_admin,maintenance.admin,model_assetflow_maintenance,group_ass
 access_maintenance_log_admin,maintenance.log.admin,model_assetflow_maintenance_log,group_assetflow_admin,1,1,1,1
 access_audit_cycle_admin,audit.cycle.admin,model_assetflow_audit_cycle,group_assetflow_admin,1,1,1,1
 access_audit_line_admin,audit.line.admin,model_assetflow_audit_line,group_assetflow_admin,1,1,1,1
+access_dashboard_employee,dashboard.employee,model_assetflow_dashboard,group_assetflow_employee,1,1,1,1
+access_analytics_manager,analytics.manager,model_assetflow_analytics,group_assetflow_manager,1,1,1,1
+access_org_setup_admin,org.setup.admin,model_assetflow_org_setup,group_assetflow_admin,1,1,1,1
