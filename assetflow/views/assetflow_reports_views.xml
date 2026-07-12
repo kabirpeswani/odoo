@@ -1,0 +1,285 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ================================================================== -->
+    <!--  SCREEN 9 — REPORTS & ANALYTICS                                    -->
+    <!--                                                                    -->
+    <!--  Every report below runs on an existing AssetFlow model through a  -->
+    <!--  graph / pivot / tree view, so managers get exportable, drill-able -->
+    <!--  analytics with no extra data entry. Kept in its own file to stay  -->
+    <!--  clear of the operational screens.                                 -->
+    <!-- ================================================================== -->
+
+    <!-- ================================================================ -->
+    <!--  Asset utilisation — built on the allocation history               -->
+    <!-- ================================================================ -->
+    <record id="view_allocation_report_graph" model="ir.ui.view">
+        <field name="name">assetflow.asset.allocation.report.graph</field>
+        <field name="model">assetflow.asset.allocation</field>
+        <field name="arch" type="xml">
+            <graph string="Asset Utilisation" type="bar" sample="1">
+                <field name="department_id"/>
+                <field name="state"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="view_allocation_report_pivot" model="ir.ui.view">
+        <field name="name">assetflow.asset.allocation.report.pivot</field>
+        <field name="model">assetflow.asset.allocation</field>
+        <field name="arch" type="xml">
+            <pivot string="Asset Utilisation" sample="1">
+                <field name="department_id" type="row"/>
+                <field name="state" type="col"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="action_report_asset_utilisation" model="ir.actions.act_window">
+        <field name="name">Asset Utilisation</field>
+        <field name="res_model">assetflow.asset.allocation</field>
+        <field name="view_mode">graph,pivot,tree</field>
+        <field name="view_ids" eval="[(5, 0, 0),
+            (0, 0, {'view_mode': 'graph', 'view_id': ref('view_allocation_report_graph')}),
+            (0, 0, {'view_mode': 'pivot', 'view_id': ref('view_allocation_report_pivot')}),
+            (0, 0, {'view_mode': 'tree',  'view_id': ref('view_asset_allocation_tree')})]"/>
+        <field name="search_view_id" ref="view_asset_allocation_search"/>
+        <field name="context">{'search_default_group_department': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No allocation data yet</p>
+            <p>How assets are being used, which departments hold the most and
+               how many allocations are still active vs. returned.</p>
+        </field>
+    </record>
+
+    <!-- ================================================================ -->
+    <!--  Maintenance frequency & cost                                      -->
+    <!-- ================================================================ -->
+    <record id="view_maintenance_report_graph" model="ir.ui.view">
+        <field name="name">assetflow.maintenance.report.graph</field>
+        <field name="model">assetflow.maintenance</field>
+        <field name="arch" type="xml">
+            <graph string="Maintenance Frequency" type="line" sample="1">
+                <field name="request_date" interval="month"/>
+                <field name="category_id"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="view_maintenance_report_pivot" model="ir.ui.view">
+        <field name="name">assetflow.maintenance.report.pivot</field>
+        <field name="model">assetflow.maintenance</field>
+        <field name="arch" type="xml">
+            <pivot string="Maintenance Analysis" sample="1">
+                <field name="category_id" type="row"/>
+                <field name="state" type="col"/>
+                <field name="total_hours" type="measure"/>
+                <field name="repair_cost" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="action_report_maintenance" model="ir.actions.act_window">
+        <field name="name">Maintenance Analysis</field>
+        <field name="res_model">assetflow.maintenance</field>
+        <field name="view_mode">graph,pivot,tree</field>
+        <field name="view_ids" eval="[(5, 0, 0),
+            (0, 0, {'view_mode': 'graph', 'view_id': ref('view_maintenance_report_graph')}),
+            (0, 0, {'view_mode': 'pivot', 'view_id': ref('view_maintenance_report_pivot')}),
+            (0, 0, {'view_mode': 'tree',  'view_id': ref('view_maintenance_tree')})]"/>
+        <field name="search_view_id" ref="view_maintenance_search"/>
+        <field name="context">{'search_default_group_category': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No maintenance data yet</p>
+            <p>How often each category breaks down, how many hours technicians
+               spend on it and what the repairs cost.</p>
+        </field>
+    </record>
+
+    <!-- ================================================================ -->
+    <!--  Resource booking — utilisation + peak-window heatmap              -->
+    <!-- ================================================================ -->
+    <record id="view_booking_report_graph" model="ir.ui.view">
+        <field name="name">assetflow.resource.booking.report.graph</field>
+        <field name="model">assetflow.resource.booking</field>
+        <field name="arch" type="xml">
+            <graph string="Resource Usage" type="bar" sample="1">
+                <field name="asset_id"/>
+                <field name="duration" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="view_booking_report_pivot" model="ir.ui.view">
+        <field name="name">assetflow.resource.booking.report.pivot</field>
+        <field name="model">assetflow.resource.booking</field>
+        <field name="arch" type="xml">
+            <!-- Weekday (rows) x hour-of-day (cols): a genuine booking heatmap
+                 of peak usage windows. -->
+            <pivot string="Booking Heatmap" sample="1">
+                <field name="booking_weekday" type="row"/>
+                <field name="booking_hour" type="col"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="action_report_booking" model="ir.actions.act_window">
+        <field name="name">Resource Usage</field>
+        <field name="res_model">assetflow.resource.booking</field>
+        <field name="view_mode">pivot,graph,calendar,tree</field>
+        <field name="view_ids" eval="[(5, 0, 0),
+            (0, 0, {'view_mode': 'pivot',    'view_id': ref('view_booking_report_pivot')}),
+            (0, 0, {'view_mode': 'graph',    'view_id': ref('view_booking_report_graph')}),
+            (0, 0, {'view_mode': 'calendar', 'view_id': ref('view_resource_booking_calendar')}),
+            (0, 0, {'view_mode': 'tree',     'view_id': ref('view_resource_booking_tree')})]"/>
+        <field name="search_view_id" ref="view_resource_booking_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No bookings yet</p>
+            <p>The heatmap shows peak usage windows by weekday and hour; switch
+               to the bar chart for total hours booked per resource.</p>
+        </field>
+    </record>
+
+    <!-- ================================================================ -->
+    <!--  Asset lifecycle reports (nearing retirement / idle)               -->
+    <!-- ================================================================ -->
+    <record id="view_asset_report_tree" model="ir.ui.view">
+        <field name="name">assetflow.asset.report.tree</field>
+        <field name="model">assetflow.asset</field>
+        <field name="arch" type="xml">
+            <tree string="Assets" create="false"
+                  decoration-danger="is_nearing_retirement"
+                  decoration-muted="state in ('retired', 'disposed')">
+                <field name="asset_tag"/>
+                <field name="name"/>
+                <field name="category_id"/>
+                <field name="current_holder_id" string="Held By" optional="show"/>
+                <field name="location" optional="show"/>
+                <field name="acquisition_date"/>
+                <field name="retirement_date"/>
+                <field name="warranty_expiry_date" optional="show"/>
+                <field name="acquisition_cost" sum="Total Value" optional="show"/>
+                <field name="currency_id" column_invisible="1"/>
+                <field name="is_nearing_retirement" optional="hide"/>
+                <field name="condition" widget="badge"
+                       decoration-success="condition in ('new', 'good')"
+                       decoration-warning="condition == 'fair'"
+                       decoration-danger="condition == 'damaged'"/>
+                <field name="state" widget="badge"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_asset_report_search" model="ir.ui.view">
+        <field name="name">assetflow.asset.report.search</field>
+        <field name="model">assetflow.asset</field>
+        <field name="arch" type="xml">
+            <search string="Assets">
+                <field name="name" string="Asset"
+                       filter_domain="['|', '|', ('name', 'ilike', self),
+                                            ('asset_tag', 'ilike', self),
+                                            ('serial_number', 'ilike', self)]"/>
+                <field name="category_id"/>
+                <field name="location"/>
+                <filter name="filter_nearing_retirement" string="Nearing Retirement"
+                        domain="[('is_nearing_retirement', '=', True)]"/>
+                <filter name="filter_never_allocated" string="Never Allocated"
+                        domain="[('allocation_ids', '=', False)]"/>
+                <filter name="filter_idle" string="Idle (Available)"
+                        domain="[('state', '=', 'available')]"/>
+                <separator/>
+                <filter name="filter_warranty_expiring" string="Warranty Expiring (60d)"
+                        domain="[('warranty_required', '=', True),
+                                 ('warranty_expiry_date', '!=', False),
+                                 ('warranty_expiry_date', '&gt;=', context_today().strftime('%Y-%m-%d')),
+                                 ('warranty_expiry_date', '&lt;=', (context_today() + relativedelta(days=60)).strftime('%Y-%m-%d'))]"/>
+                <separator/>
+                <filter name="filter_active" string="In Service"
+                        domain="[('state', 'not in', ('lost', 'retired', 'disposed'))]"/>
+                <group expand="0" string="Group By">
+                    <filter name="group_category" string="Category"
+                            context="{'group_by': 'category_id'}"/>
+                    <filter name="group_state" string="Lifecycle State"
+                            context="{'group_by': 'state'}"/>
+                    <filter name="group_condition" string="Condition"
+                            context="{'group_by': 'condition'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_report_nearing_retirement" model="ir.actions.act_window">
+        <field name="name">Nearing Retirement</field>
+        <field name="res_model">assetflow.asset</field>
+        <field name="view_mode">tree,form</field>
+        <field name="view_ids" eval="[(5, 0, 0),
+            (0, 0, {'view_mode': 'tree', 'view_id': ref('view_asset_report_tree')}),
+            (0, 0, {'view_mode': 'form', 'view_id': ref('view_asset_form')})]"/>
+        <field name="search_view_id" ref="view_asset_report_search"/>
+        <field name="domain">[('is_nearing_retirement', '=', True)]</field>
+        <field name="context">{'search_default_group_category': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Nothing is ageing out yet</p>
+            <p>Assets in service whose expected lifetime ends within a year —
+               plan replacements before they fail.</p>
+        </field>
+    </record>
+
+    <record id="action_report_idle_assets" model="ir.actions.act_window">
+        <field name="name">Idle Assets</field>
+        <field name="res_model">assetflow.asset</field>
+        <field name="view_mode">tree,kanban,form</field>
+        <field name="view_ids" eval="[(5, 0, 0),
+            (0, 0, {'view_mode': 'tree',   'view_id': ref('view_asset_report_tree')}),
+            (0, 0, {'view_mode': 'kanban', 'view_id': ref('view_asset_kanban')}),
+            (0, 0, {'view_mode': 'form',   'view_id': ref('view_asset_form')})]"/>
+        <field name="search_view_id" ref="view_asset_report_search"/>
+        <field name="domain">[('state', '=', 'available')]</field>
+        <field name="context">{'search_default_group_category': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Nothing sitting idle</p>
+            <p>Available assets that nobody currently holds — candidates for
+               reallocation. Add the <b>Never Allocated</b> filter to spot ones
+               that have never been used.</p>
+        </field>
+    </record>
+
+    <!-- ================================================================== -->
+    <!--  REPORTING MENU                                                    -->
+    <!-- ================================================================== -->
+    <menuitem id="menu_assetflow_reporting"
+              name="Reporting"
+              parent="menu_assetflow_root"
+              sequence="30"
+              groups="assetflow.group_assetflow_manager"/>
+
+    <menuitem id="menu_report_asset_utilisation"
+              name="Asset Utilisation"
+              parent="menu_assetflow_reporting"
+              action="action_report_asset_utilisation"
+              sequence="10"/>
+
+    <menuitem id="menu_report_maintenance"
+              name="Maintenance Analysis"
+              parent="menu_assetflow_reporting"
+              action="action_report_maintenance"
+              sequence="20"/>
+
+    <menuitem id="menu_report_booking"
+              name="Resource Usage"
+              parent="menu_assetflow_reporting"
+              action="action_report_booking"
+              sequence="30"/>
+
+    <menuitem id="menu_report_nearing_retirement"
+              name="Nearing Retirement"
+              parent="menu_assetflow_reporting"
+              action="action_report_nearing_retirement"
+              sequence="40"/>
+
+    <menuitem id="menu_report_idle_assets"
+              name="Idle Assets"
+              parent="menu_assetflow_reporting"
+              action="action_report_idle_assets"
+              sequence="50"/>
+
+</odoo>
