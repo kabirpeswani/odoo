@@ -1,100 +1,36 @@
-# AssetFlow — Enterprise Asset & Resource Management
+This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
-An Odoo 17 module for tracking physical assets through their whole life: registration,
-allocation, transfer, shared-resource booking, maintenance and physical audit.
-No accounting or purchase dependencies — it depends only on `base` and `mail`.
+## Getting Started
 
-## Running it
-
-You need [Docker Desktop](https://www.docker.com/products/docker-desktop/) and nothing else.
-No local Python, Odoo or Postgres install is required.
+First, run the development server:
 
 ```bash
-git clone https://github.com/kabirpeswani/odoo.git
-cd odoo
-docker compose up
+npm run dev
+# or
+yarn dev
+# or
+pnpm dev
+# or
+bun dev
 ```
 
-The first run pulls the images and builds the database, which takes a few minutes.
-When you see `Modules loaded.` in the log, open:
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-**http://localhost:8069** — log in with `admin` / `admin`
+You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
-That's it. `docker compose up` both creates the database and installs the module on the
-first run, and simply starts the server on every run after that.
+This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
-### Everyday commands
+## Learn More
 
-```bash
-docker compose up          # start (Ctrl+C to stop)
-docker compose up -d       # start in the background
-docker compose logs -f     # follow the logs
-docker compose down        # stop, keeping the database
-```
+To learn more about Next.js, take a look at the following resources:
 
-### Applying code changes
+- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
+- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
 
-Odoo loads Python at startup and view XML at module upgrade, so after editing:
+You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 
-```bash
-# Python-only change — a restart is enough
-docker compose restart odoo
+## Deploy on Vercel
 
-# Changed a view, security rule or data file — upgrade the module
-docker compose run --rm odoo odoo \
-  --addons-path=/usr/lib/python3/dist-packages/odoo/addons,/mnt/extra-addons \
-  -d assetflow --db_host=db --db_user=odoo --db_password=odoo \
-  -u assetflow --stop-after-init
-docker compose restart odoo
-```
+The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
-### Starting over
-
-```bash
-docker compose down -v     # deletes the database volume too
-docker compose up
-```
-
-## What's in it
-
-| Area | Model | What it does |
-| --- | --- | --- |
-| Registry | `assetflow.asset` | Auto-generated tags (`AF-0001`), warranty derived from the category, a seven-state lifecycle |
-| Allocation | `assetflow.asset.allocation` | Request → approve → return. An asset can only have one active holder |
-| Transfer | same model, `is_transfer` | Allocating a held asset redirects you into a transfer request that closes the previous holder's allocation on approval |
-| Booking | `assetflow.resource.booking` | Calendar for shared resources. Overlapping slots are refused; back-to-back ones are fine |
-| Maintenance | `assetflow.maintenance` | Approval pulls the asset off the floor; resolution returns it to its holder, not to Available |
-| Audit | `assetflow.audit.cycle` | Physical count per department or location. Closing pushes findings onto the assets: missing becomes lost, damaged opens a maintenance request |
-
-## Roles
-
-`Employee ⊂ Department Head ⊂ Asset Manager ⊂ Administrator`, each implying the one below it.
-
-Every internal user is an AssetFlow **Employee** automatically — `base.group_user` implies the
-employee group, so there is nothing to assign for the common case. Promotion above Employee
-happens under Configuration → Employee Directory and may only be done by an AssetFlow
-Administrator. Portal and public users hold no AssetFlow role and cannot be given one.
-
-## Notes for maintainers
-
-A few things are deliberate and easy to "fix" by mistake:
-
-- **`days_overdue` is intentionally not stored.** It is derived from `today()`, so a stored
-  value would only refresh when some other field changed, and would freeze on the day the
-  allocation went overdue.
-- **`assetflow.department` inherits `mail.thread`.** Its form has a chatter and its fields are
-  tracked; dropping the mixin breaks view validation at module load.
-- **The audit cycle's discrepancy rollup is written with `sudo()`.** Auditors are usually plain
-  employees with read-only access to cycles, and the rollup is derived from the cycle's own
-  lines rather than typed in by the user. Record rules still decide which cycles they can see.
-- **`security/ir.model.access.csv` must contain no comment lines.** Odoo's CSV importer has no
-  comment syntax and reads a `#` line as a data row with too few columns, which kills the
-  loader with `IndexError`.
-
-## Known limitation
-
-Booking overlap is enforced by a constraint that re-reads the table. That is correct under
-normal use, but it is not a concurrency guarantee: under PostgreSQL's `REPEATABLE READ`
-isolation, a booking being inserted by another open transaction is invisible to it, so two
-simultaneous requests for the same slot could in principle both succeed. Closing that properly
-needs a Postgres exclusion constraint over `(asset_id, tsrange(start_time, end_time))`.
+Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
