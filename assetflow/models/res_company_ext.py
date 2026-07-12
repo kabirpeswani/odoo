@@ -164,6 +164,13 @@ class ResUsers(models.Model):
         for user in self:
             if not user.assetflow_role:
                 continue
+            if user.share:
+                # Every AssetFlow group implies base.group_user, so handing one
+                # to a portal/public user would silently turn them into an
+                # internal user — which Odoo rejects outright anyway.
+                raise ValidationError(_(
+                    "'%s' is a portal user and cannot hold an AssetFlow role. "
+                    "Convert them to an internal user first.", user.name))
             target = self.env.ref('assetflow.%s' % {
                 'employee': 'group_assetflow_employee',
                 'dept_head': 'group_assetflow_dept_head',
@@ -181,25 +188,72 @@ class ResUsers(models.Model):
                 'groups_id': [(3, gid) for gid in others.ids] + [(4, target.id)],
             })
 
+    @api.model
+    def _assetflow_group_ids(self):
+        """The ids of the four AssetFlow role groups."""
+        groups = self.env['res.groups']
+        for _role, xmlid in ROLE_GROUPS:
+            groups |= self.env.ref(xmlid, raise_if_not_found=False) \
+                      or self.env['res.groups']
+        return set(groups.ids)
+
+    def _touches_assetflow_roles(self, vals):
+        """Does ``vals`` actually add or remove an AssetFlow group?
+
+        Only AssetFlow's own groups are ours to police. A plain Odoo
+        administrator must stay free to manage every *other* group — granting
+        Sales access has nothing to do with who may allocate an asset.
+        """
+        if 'assetflow_role' in vals:
+            return True
+        commands = vals.get('groups_id')
+        if not commands:
+            return False
+        ours = self._assetflow_group_ids()
+        if not ours:
+            return False
+
+        for command in commands:
+            if not isinstance(command, (list, tuple)) or not command:
+                continue
+            code = command[0]
+            if code in (3, 4):                      # unlink / link one group
+                if command[1] in ours:
+                    return True
+            elif code == 5:                         # drop every group
+                if any(ours & set(user.groups_id.ids) for user in self):
+                    return True
+            elif code == 6:                         # replace the whole set
+                target = ours & set(command[2] or ())
+                if not self and target:             # create(): granting outright
+                    return True
+                if any(ours & set(user.groups_id.ids) != target
+                       for user in self):
+                    return True
+        return False
+
     def _check_role_grant(self, vals):
         """Guard against self-elevation: only an AssetFlow admin may hand out
-        AssetFlow roles / security groups."""
+        AssetFlow roles."""
         if self.env.su or self.env.context.get('assetflow_bypass_role_guard'):
             return
-        touches_roles = 'assetflow_role' in vals or 'groups_id' in vals
-        if not touches_roles:
+        if not self._touches_assetflow_roles(vals):
             return
         if not self.env.user.has_group('assetflow.group_assetflow_admin'):
             raise AccessError(_(
-                "Only an AssetFlow Administrator can assign user roles or "
-                "security groups. Please contact your administrator."))
+                "Only an AssetFlow Administrator can assign AssetFlow roles. "
+                "Please contact your administrator."))
 
     @api.model_create_multi
     def create(self, vals_list):
         for vals in vals_list:
             self._check_role_grant(vals)
-            # Signup / manual creation always lands on the Employee role.
-            vals.setdefault('assetflow_role', 'employee')
+        # No role is defaulted here on purpose. base.group_user implies
+        # group_assetflow_employee (see security/assetflow_security.xml), so
+        # every internal user already lands on the Employee role. Forcing the
+        # role onto *every* new user used to drag portal and public users into
+        # an internal group, which Odoo rejects with "the user cannot have more
+        # than one user types".
         return super().create(vals_list)
 
     def write(self, vals):

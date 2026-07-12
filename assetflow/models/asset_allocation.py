@@ -37,7 +37,8 @@ class AssetflowAssetAllocation(models.Model):
     asset_id = fields.Many2one(
         'assetflow.asset', string='Asset', required=True,
         ondelete='restrict', tracking=True,
-        domain="[('state', 'not in', ('lost', 'retired', 'disposed'))]")
+        domain="[('state', 'not in', ('lost', 'retired', 'disposed')),"
+               " ('bookable', '=', False)]")
     employee_id = fields.Many2one(
         'res.users', string='Assigned To', required=True, tracking=True,
         default=lambda self: self.env.user,
@@ -87,8 +88,11 @@ class AssetflowAssetAllocation(models.Model):
     approved_by_id = fields.Many2one(
         'res.users', string='Approved By', readonly=True, copy=False)
     approval_date = fields.Datetime(readonly=True, copy=False)
-    days_overdue = fields.Integer(
-        compute='_compute_days_overdue', store=True)
+    # Deliberately not stored: it is derived from today(), which moves on its
+    # own. A stored value would only ever be refreshed when one of the fields
+    # below changes, so it would freeze on the day the allocation went overdue
+    # and under-report from then on.
+    days_overdue = fields.Integer(compute='_compute_days_overdue')
     company_id = fields.Many2one(
         'res.company', related='asset_id.company_id', store=True)
 
@@ -210,6 +214,24 @@ class AssetflowAssetAllocation(models.Model):
                 raise ValidationError(_(
                     "'%s' is out of circulation and cannot be allocated.",
                     asset.display_name))
+
+    @api.constrains('asset_id')
+    def _check_asset_not_bookable(self):
+        """A shared resource is booked, never allocated.
+
+        The asset model refuses to be 'allocated' and 'bookable' at once, but
+        that constraint only fired when the allocation was *approved* — long
+        after the requester and the approver had both done their part. Catch it
+        the moment the allocation is written instead, and say what to do about
+        it.
+        """
+        for allocation in self:
+            if allocation.asset_id.bookable:
+                raise ValidationError(_(
+                    "'%s' is a shared resource, so it is booked rather than "
+                    "allocated. Reserve it on the booking calendar, or ask an "
+                    "Asset Manager to clear its Shared / Bookable flag first.",
+                    allocation.asset_id.display_name))
 
     @api.constrains('is_transfer', 'previous_allocation_id', 'employee_id')
     def _check_transfer_consistency(self):
