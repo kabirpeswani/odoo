@@ -221,23 +221,41 @@ class AssetflowDashboard(models.TransientModel):
 # ===========================================================================
 #  SCREEN 3 — Organization Setup (admin only)
 # ===========================================================================
-class AssetflowOrgSetup(models.TransientModel):
+class AssetflowOrgSetup(models.Model):
+    """The Organization Setup page.
+
+    A regular model with exactly one record, not a TransientModel, and the two
+    editable tabs are One2many rather than Many2many. That is the whole point:
+    on a Many2many, "Add a line" opens a dialog to *pick an existing* record —
+    it offers "No records found!" and buries the New button in the dialog
+    footer, which reads as broken when what you wanted was to create the
+    department you do not have yet. A One2many creates inline, which is what
+    the screen is for.
+
+    That in turn is why this is not transient: One2many needs a real record on
+    the other end of the foreign key to point at.
+    """
     _name = 'assetflow.org.setup'
     _description = "AssetFlow Organization Setup"
 
-    department_ids = fields.Many2many(
-        'assetflow.department', 'assetflow_setup_dept_rel',
-        'setup_id', 'department_id', string='Departments',
-        default=lambda self: self.env['assetflow.department'].search([]).ids)
-    category_ids = fields.Many2many(
-        'assetflow.asset.category', 'assetflow_setup_category_rel',
-        'setup_id', 'category_id', string='Categories',
-        default=lambda self: self.env['assetflow.asset.category'].search([]).ids)
+    name = fields.Char(default='Organization Setup', readonly=True)
+
+    department_ids = fields.One2many(
+        'assetflow.department', 'setup_id', string='Departments')
+    category_ids = fields.One2many(
+        'assetflow.asset.category', 'setup_id', string='Categories')
+
+    # Employees are never *created* here — an administrator only raises an
+    # existing user's role — so this stays a computed list of every internal
+    # user. A compute is safe now that the record is real: on a new transient
+    # record it would never have run.
     employee_ids = fields.Many2many(
-        'res.users', 'assetflow_setup_user_rel', 'setup_id', 'user_id',
-        string='Employees',
-        default=lambda self: self.env['res.users'].search(
-            [('share', '=', False)]).ids)
+        'res.users', compute='_compute_employee_ids', string='Employees')
+
+    def _compute_employee_ids(self):
+        users = self.env['res.users'].search([('share', '=', False)])
+        for setup in self:
+            setup.employee_ids = users
 
 
 # ===========================================================================

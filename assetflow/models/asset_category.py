@@ -37,6 +37,14 @@ class AssetflowAssetCategory(models.Model):
         string='Expected Lifetime (Years)', default=5,
         help="Informative only — used by the audit team to spot ageing assets.")
 
+    # Inverse of assetflow.org.setup.category_ids — see the department field of
+    # the same name.
+    setup_id = fields.Many2one(
+        'assetflow.org.setup', string='Organization Setup',
+        ondelete='set null', index=True,
+        default=lambda self: self.env.ref(
+            'assetflow.org_setup_main', raise_if_not_found=False))
+
     asset_ids = fields.One2many(
         'assetflow.asset', 'category_id', string='Assets')
     asset_count = fields.Integer(compute='_compute_asset_count')

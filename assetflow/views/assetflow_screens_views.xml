@@ -206,9 +206,11 @@
         </field>
     </record>
 
+    <!-- Always opens the one Organization Setup record, never a new one. -->
     <record id="action_assetflow_org_setup" model="ir.actions.act_window">
         <field name="name">Organization Setup</field>
         <field name="res_model">assetflow.org.setup</field>
+        <field name="res_id" ref="assetflow.org_setup_main"/>
         <field name="view_mode">form</field>
         <field name="view_id" ref="view_assetflow_org_setup_form"/>
         <field name="target">inline</field>

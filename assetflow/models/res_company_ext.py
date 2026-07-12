@@ -43,6 +43,14 @@ class AssetflowDepartment(models.Model):
         'assetflow.department', string='Parent Department',
         ondelete='restrict', index=True)
     parent_path = fields.Char(index=True, unaccent=False)
+    # Inverse of assetflow.org.setup.department_ids, so the Organization Setup
+    # screen can create departments inline. Defaulted, so a department created
+    # anywhere else still shows up on that screen.
+    setup_id = fields.Many2one(
+        'assetflow.org.setup', string='Organization Setup',
+        ondelete='set null', index=True,
+        default=lambda self: self.env.ref(
+            'assetflow.org_setup_main', raise_if_not_found=False))
     child_ids = fields.One2many(
         'assetflow.department', 'parent_id', string='Sub-Departments')
     member_ids = fields.One2many(

@@ -3,6 +3,15 @@
     <data noupdate="1">
 
         <!-- ============================================================ -->
+        <!--  The single Organization Setup record (screen 3).            -->
+        <!--  Departments and categories point at it, which is what lets   -->
+        <!--  that screen create them inline through a One2many.           -->
+        <!-- ============================================================ -->
+        <record id="org_setup_main" model="assetflow.org.setup">
+            <field name="name">Organization Setup</field>
+        </record>
+
+        <!-- ============================================================ -->
         <!--  Sequences                                                    -->
         <!-- ============================================================ -->
         <record id="seq_assetflow_asset" model="ir.sequence">

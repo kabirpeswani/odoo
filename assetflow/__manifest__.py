@@ -60,4 +60,6 @@ No accounting, purchase or invoicing dependencies.
     'application': True,
     'installable': True,
     'auto_install': False,
+    # Backfills setup_id on departments/categories that predate that field.
+    'post_init_hook': 'post_init_hook',
 }
