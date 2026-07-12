@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_assetflow_maintenance_tree" model="ir.ui.view">
+        <field name="name">assetflow.maintenance.tree</field>
+        <field name="model">assetflow.maintenance</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="asset_id"/>
+                <field name="issue_description"/>
+                <field name="priority" decoration-danger="priority == 'high'" decoration-warning="priority == 'medium'"/>
+                <field name="status" decoration-warning="status == 'pending'" decoration-success="status == 'resolved'"/>
+                <field name="requested_by_id"/>
+                <field name="request_date"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_assetflow_maintenance_form" model="ir.ui.view">
+        <field name="name">assetflow.maintenance.form</field>
+        <field name="model">assetflow.maintenance</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <field name="status" widget="statusbar"
+                        statusbar_visible="pending,approved,technician_assigned,in_progress,resolved"/>
+                    <button name="action_approve" string="Approve" type="object" class="btn-success"
+                        attrs="{'invisible': [('status', '!=', 'pending')]}"/>
+                    <button name="action_reject" string="Reject" type="object" class="btn-danger"
+                        attrs="{'invisible': [('status', '!=', 'pending')]}"/>
+                    <button name="action_assign_technician" string="Assign Technician" type="object"
+                        attrs="{'invisible': [('status', '!=', 'approved')]}"/>
+                    <button name="action_start" string="Start Work" type="object"
+                        attrs="{'invisible': [('status', '!=', 'technician_assigned')]}"/>
+                    <button name="action_resolve" string="Mark Resolved" type="object" class="btn-primary"
+                        attrs="{'invisible': [('status', '!=', 'in_progress')]}"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="asset_id"/>
+                            <field name="requested_by_id"/>
+                            <field name="priority"/>
+                        </group>
+                        <group>
+                            <field name="request_date"/>
+                            <field name="status"/>
+                        </group>
+                    </group>
+                    <field name="issue_description"/>
+                    <field name="notes"/>
+                    <field name="photo" widget="image"/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_assetflow_maintenance_search" model="ir.ui.view">
+        <field name="name">assetflow.maintenance.search</field>
+        <field name="model">assetflow.maintenance</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="asset_id"/>
+                <field name="requested_by_id"/>
+                <filter name="pending" string="Pending" domain="[('status','=','pending')]"/>
+                <filter name="in_progress" string="In Progress" domain="[('status','in',('approved','technician_assigned','in_progress'))]"/>
+                <filter name="resolved" string="Resolved" domain="[('status','=','resolved')]"/>
+                <filter name="high_priority" string="High Priority" domain="[('priority','=','high')]"/>
+            </search>
+        </field>
+    </record>
+</odoo>

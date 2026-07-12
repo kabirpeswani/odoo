@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_assetflow_report_asset_status" model="ir.actions.report">
+        <field name="name">Asset Status Report</field>
+        <field name="model">assetflow.asset</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">assetflow.report_asset_status</field>
+        <field name="report_file">assetflow.report_asset_status</field>
+        <field name="print_report_name">'Asset-Status-%s' % (datetime.now().strftime('%Y%m%d'))</field>
+        <field name="binding_model_id" ref="model_assetflow_asset"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <record id="report_asset_status_template" model="ir.ui.view">
+        <field name="name">assetflow.report_asset_status</field>
+        <field name="model">report.assetflow.report_asset_status</field>
+        <field name="arch" type="xml">
+            <t id="report_asset_status_document">
+                <t t-call="web.html_container">
+                    <t t-foreach="docs" t-as="doc">
+                        <div class="page">
+                            <h2>Asset Status Report</h2>
+                            <table class="table table-bordered">
+                                <tr><td><strong>Asset Tag</strong></td><td><span t-esc="doc.asset_tag"/></td></tr>
+                                <tr><td><strong>Name</strong></td><td><span t-esc="doc.name"/></td></tr>
+                                <tr><td><strong>Category</strong></td><td><span t-esc="doc.category_id.name"/></td></tr>
+                                <tr><td><strong>Status</strong></td><td><span t-esc="dict(doc._fields['status'].selection).get(doc.status, doc.status)"/></td></tr>
+                                <tr><td><strong>Location</strong></td><td><span t-esc="doc.location"/></td></tr>
+                                <tr><td><strong>Condition</strong></td><td><span t-esc="doc.condition"/></td></tr>
+                                <tr><td><strong>Current Holder</strong></td><td><span t-esc="doc.current_holder_id.name or 'N/A'"/></td></tr>
+                            </table>
+                            <h3>Status Summary</h3>
+                            <ul>
+                                <li>Available: <t t-esc="status_counts['available']"/></li>
+                                <li>Allocated: <t t-esc="status_counts['allocated']"/></li>
+                                <li>Under Maintenance: <t t-esc="status_counts['under_maintenance']"/></li>
+                            </ul>
+                        </div>
+                    </t>
+                </t>
+            </t>
+        </field>
+    </record>
+</odoo>

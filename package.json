@@ -3,12 +3,16 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "bun run scripts/dev.ts",
+    "dev:frontend": "next dev",
+    "dev:backend": "docker compose up -d && bun run scripts/init-odoo.ts",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "dev:stop": "docker compose down"
   },
   "dependencies": {
+    "concurrently": "^10.0.3",
     "next": "16.2.10",
     "react": "19.2.4",
     "react-dom": "19.2.4"

@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_assetflow_transfer_tree" model="ir.ui.view">
+        <field name="name">assetflow.transfer.tree</field>
+        <field name="model">assetflow.transfer</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="asset_id"/>
+                <field name="requested_by_id"/>
+                <field name="target_employee_id"/>
+                <field name="request_date"/>
+                <field name="state" decoration-warning="state == 'pending'" decoration-success="state == 'approved'" decoration-danger="state == 'rejected'"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_assetflow_transfer_form" model="ir.ui.view">
+        <field name="name">assetflow.transfer.form</field>
+        <field name="model">assetflow.transfer</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <field name="state" widget="statusbar" statusbar_visible="pending,approved,rejected"/>
+                    <button name="action_approve" string="Approve" type="object" class="btn-success"
+                        attrs="{'invisible': [('state', '!=', 'pending')]}"/>
+                    <button name="action_reject" string="Reject" type="object" class="btn-danger"
+                        attrs="{'invisible': [('state', '!=', 'pending')]}"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="asset_id"/>
+                            <field name="requested_by_id"/>
+                            <field name="target_employee_id"/>
+                        </group>
+                        <group>
+                            <field name="request_date"/>
+                            <field name="approved_by_id"/>
+                        </group>
+                    </group>
+                    <field name="notes"/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+</odoo>

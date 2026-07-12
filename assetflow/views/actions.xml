@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_assetflow_dashboard" model="ir.actions.act_window">
+        <field name="name">Dashboard</field>
+        <field name="res_model">assetflow.asset</field>
+        <field name="view_mode">dashboard,tree,form</field>
+        <field name="view_id" ref="view_assetflow_dashboard"/>
+        <field name="help" type="html">
+            <p><strong>AssetFlow Dashboard</strong></p>
+            <p>Welcome to AssetFlow - Enterprise Asset &amp; Resource Management System.</p>
+        </field>
+    </record>
+
+    <!-- Department -->
+    <record id="action_assetflow_department" model="ir.actions.act_window">
+        <field name="name">Departments</field>
+        <field name="res_model">assetflow.department</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <!-- Category -->
+    <record id="action_assetflow_category" model="ir.actions.act_window">
+        <field name="name">Asset Categories</field>
+        <field name="res_model">assetflow.category</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <!-- Employee -->
+    <record id="action_assetflow_employee" model="ir.actions.act_window">
+        <field name="name">Employees</field>
+        <field name="res_model">assetflow.employee</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <!-- Asset -->
+    <record id="action_assetflow_asset" model="ir.actions.act_window">
+        <field name="name">Asset Directory</field>
+        <field name="res_model">assetflow.asset</field>
+        <field name="view_mode">tree,form</field>
+        <field name="context">{'search_default_available': 1}</field>
+    </record>
+
+    <!-- Allocation -->
+    <record id="action_assetflow_allocation" model="ir.actions.act_window">
+        <field name="name">Allocations</field>
+        <field name="res_model">assetflow.allocation</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <!-- Transfer -->
+    <record id="action_assetflow_transfer" model="ir.actions.act_window">
+        <field name="name">Transfer Requests</field>
+        <field name="res_model">assetflow.transfer</field>
+        <field name="view_mode">tree,form</field>
+        <field name="context">{'search_default_pending': 1}</field>
+    </record>
+
+    <!-- Booking -->
+    <record id="action_assetflow_booking" model="ir.actions.act_window">
+        <field name="name">Resource Bookings</field>
+        <field name="res_model">assetflow.booking</field>
+        <field name="view_mode">calendar,tree,form</field>
+        <field name="context">{'search_default_upcoming': 1}</field>
+    </record>
+
+    <!-- Maintenance -->
+    <record id="action_assetflow_maintenance" model="ir.actions.act_window">
+        <field name="name">Maintenance Requests</field>
+        <field name="res_model">assetflow.maintenance</field>
+        <field name="view_mode">tree,form</field>
+        <field name="context">{'search_default_pending': 1}</field>
+    </record>
+
+    <!-- Audit Cycle -->
+    <record id="action_assetflow_audit_cycle" model="ir.actions.act_window">
+        <field name="name">Audit Cycles</field>
+        <field name="res_model">assetflow.audit.cycle</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <!-- Audit Check -->
+    <record id="action_assetflow_audit_check" model="ir.actions.act_window">
+        <field name="name">Audit Checks</field>
+        <field name="res_model">assetflow.audit.check</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <record id="action_assetflow_audit_check_assets" model="ir.actions.act_window">
+        <field name="name">Check Assets</field>
+        <field name="res_model">assetflow.audit.check</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('audit_id', '=', active_id)]</field>
+        <field name="context">{'default_audit_id': active_id}</field>
+    </record>
+
+    <record id="action_assetflow_audit_discrepancies" model="ir.actions.act_window">
+        <field name="name">Discrepancies</field>
+        <field name="res_model">assetflow.audit.check</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('audit_id', '=', active_id), ('check_status', 'in', ('missing', 'damaged'))]</field>
+    </record>
+
+    <!-- Notification -->
+    <record id="action_assetflow_notification" model="ir.actions.act_window">
+        <field name="name">Notifications</field>
+        <field name="res_model">assetflow.notification</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <!-- Activity Log -->
+    <record id="action_assetflow_activity_log" model="ir.actions.act_window">
+        <field name="name">Activity Logs</field>
+        <field name="res_model">assetflow.activity.log</field>
+        <field name="view_mode">tree</field>
+    </record>
+</odoo>

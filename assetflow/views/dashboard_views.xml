@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_assetflow_dashboard" model="ir.ui.view">
+        <field name="name">assetflow.dashboard</field>
+        <field name="model">assetflow.asset</field>
+        <field name="arch" type="xml">
+            <dashboard>
+                <view name="assets_available" string="Available Assets" domain="[('status','=','available')]" icon="fa-check"/>
+                <view name="assets_allocated" string="Allocated Assets" domain="[('status','=','allocated')]" icon="fa-user"/>
+                <view name="under_maintenance" string="Under Maintenance" domain="[('status','=','under_maintenance')]" icon="fa-wrench"/>
+                <view name="overdue_returns" string="Overdue Returns" domain="[('expected_return_date','&lt;',context_today().strftime('%Y-%m-%d')),('status','=','allocated')]" icon="fa-exclamation-triangle"/>
+            </dashboard>
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_assetflow_activity_log_tree" model="ir.ui.view">
+        <field name="name">assetflow.activity.log.tree</field>
+        <field name="model">assetflow.activity.log</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="timestamp"/>
+                <field name="user_name"/>
+                <field name="action"/>
+                <field name="details"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_assetflow_activity_log_search" model="ir.ui.view">
+        <field name="name">assetflow.activity.log.search</field>
+        <field name="model">assetflow.activity.log</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="user_name"/>
+                <field name="action"/>
+                <field name="details"/>
+                <filter name="allocations" string="Allocations" domain="[('action','in',('ALLOCATE','RETURN'))]"/>
+                <filter name="transfers" string="Transfers" domain="[('action','in',('SUBMIT_TRANSFER','APPROVE_TRANSFER','REJECT_TRANSFER'))]"/>
+                <filter name="bookings" string="Bookings" domain="[('action','in',('CONFIRM_BOOKING','CANCEL_BOOKING'))]"/>
+                <filter name="maintenance" string="Maintenance" domain="[('action','in',('RAISE_MAINTENANCE','UPDATE_MAINTENANCE'))]"/>
+            </search>
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Admin - Full access to all features -->
+    <record id="group_assetflow_admin" model="res.groups">
+        <field name="name">Admin</field>
+        <field name="category_id" ref="base.module_category_operations_assets"/>
+        <field name="implied_ids" eval="[(4, ref('group_assetflow_asset_manager')), (4, ref('group_assetflow_department_head')), (4, ref('group_assetflow_employee'))]"/>
+        <field name="comment">Full access to all AssetFlow features including org setup, audits, and role assignment.</field>
+    </record>
+
+    <!-- Asset Manager - Can register, allocate, approve maintenance/transfers -->
+    <record id="group_assetflow_asset_manager" model="res.groups">
+        <field name="name">Asset Manager</field>
+        <field name="category_id" ref="base.module_category_operations_assets"/>
+        <field name="implied_ids" eval="[(4, ref('group_assetflow_employee'))]"/>
+        <field name="comment">Can register assets, manage allocations, approve transfers and maintenance requests.</field>
+    </record>
+
+    <!-- Department Head - Can view dept assets, approve dept requests -->
+    <record id="group_assetflow_department_head" model="res.groups">
+        <field name="name">Department Head</field>
+        <field name="category_id" ref="base.module_category_operations_assets"/>
+        <field name="implied_ids" eval="[(4, ref('group_assetflow_employee'))]"/>
+        <field name="comment">Can view department assets, approve allocation/transfer requests within their department, book resources.</field>
+    </record>
+
+    <!-- Employee - Basic access -->
+    <record id="group_assetflow_employee" model="res.groups">
+        <field name="name">Employee</field>
+        <field name="category_id" ref="base.module_category_operations_assets"/>
+        <field name="comment">Can view own assets, book shared resources, raise maintenance requests.</field>
+    </record>
+</odoo>

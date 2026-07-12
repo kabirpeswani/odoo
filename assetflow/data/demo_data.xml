@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="assetflow_demo_dept_engineering" model="assetflow.department">
+        <field name="name">Engineering</field>
+        <field name="status">active</field>
+    </record>
+
+    <record id="assetflow_demo_dept_marketing" model="assetflow.department">
+        <field name="name">Marketing</field>
+        <field name="status">active</field>
+    </record>
+
+    <record id="assetflow_demo_dept_operations" model="assetflow.department">
+        <field name="name">Operations</field>
+        <field name="status">active</field>
+    </record>
+
+    <record id="assetflow_demo_cat_electronics" model="assetflow.category">
+        <field name="name">Electronics</field>
+    </record>
+
+    <record id="assetflow_demo_cat_furniture" model="assetflow.category">
+        <field name="name">Furniture</field>
+    </record>
+
+    <record id="assetflow_demo_cat_vehicles" model="assetflow.category">
+        <field name="name">Vehicles</field>
+    </record>
+
+    <record id="assetflow_demo_cat_spaces" model="assetflow.category">
+        <field name="name">Shared Spaces</field>
+    </record>
+
+    <!-- Demo Employees -->
+    <record id="assetflow_demo_emp_priya" model="assetflow.employee">
+        <field name="name">Priya Shah</field>
+        <field name="email">priya@assetflow.com</field>
+        <field name="department_id" ref="assetflow_demo_dept_engineering"/>
+        <field name="role">department_head</field>
+        <field name="status">active</field>
+    </record>
+
+    <record id="assetflow_demo_emp_raj" model="assetflow.employee">
+        <field name="name">Raj Sharma</field>
+        <field name="email">raj@assetflow.com</field>
+        <field name="department_id" ref="assetflow_demo_dept_marketing"/>
+        <field name="role">asset_manager</field>
+        <field name="status">active</field>
+    </record>
+
+    <record id="assetflow_demo_emp_kabir" model="assetflow.employee">
+        <field name="name">Kabir Peswani</field>
+        <field name="email">kabir@assetflow.com</field>
+        <field name="department_id" ref="assetflow_demo_dept_operations"/>
+        <field name="role">admin</field>
+        <field name="status">active</field>
+    </record>
+
+    <record id="assetflow_demo_emp_ananya" model="assetflow.employee">
+        <field name="name">Ananya Rao</field>
+        <field name="email">ananya@assetflow.com</field>
+        <field name="department_id" ref="assetflow_demo_dept_engineering"/>
+        <field name="role">employee</field>
+        <field name="status">active</field>
+    </record>
+
+    <record id="assetflow_demo_emp_siddharth" model="assetflow.employee">
+        <field name="name">Siddharth Iqbal</field>
+        <field name="email">siddharth@assetflow.com</field>
+        <field name="department_id" ref="assetflow_demo_dept_engineering"/>
+        <field name="role">employee</field>
+        <field name="status">active</field>
+    </record>
+
+    <!-- Assign Department Heads -->
+    <record id="assetflow_demo_dept_engineering" model="assetflow.department">
+        <field name="head_id" ref="assetflow_demo_emp_priya"/>
+    </record>
+    <record id="assetflow_demo_dept_marketing" model="assetflow.department">
+        <field name="head_id" ref="assetflow_demo_emp_raj"/>
+    </record>
+    <record id="assetflow_demo_dept_operations" model="assetflow.department">
+        <field name="head_id" ref="assetflow_demo_emp_kabir"/>
+    </record>
+
+    <!-- Demo Assets -->
+    <record id="assetflow_demo_asset_ultrawide" model="assetflow.asset">
+        <field name="name">UltraWide Monitor 34"</field>
+        <field name="asset_tag">AF-0001</field>
+        <field name="category_id" ref="assetflow_demo_cat_electronics"/>
+        <field name="serial_number">SN-AVAIL-1</field>
+        <field name="acquisition_date">2025-01-10</field>
+        <field name="acquisition_cost">350.0</field>
+        <field name="condition">good</field>
+        <field name="location">HQ Floor 2</field>
+        <field name="status">available</field>
+        <field name="is_bookable">True</field>
+    </record>
+
+    <record id="assetflow_demo_asset_dell_laptop" model="assetflow.asset">
+        <field name="name">Dell Laptop</field>
+        <field name="asset_tag">AF-0012</field>
+        <field name="category_id" ref="assetflow_demo_cat_electronics"/>
+        <field name="serial_number">SN-DELL-0012</field>
+        <field name="acquisition_date">2025-03-10</field>
+        <field name="acquisition_cost">1100.0</field>
+        <field name="condition">good</field>
+        <field name="location">Bengaluru</field>
+        <field name="status">allocated</field>
+        <field name="is_bookable">False</field>
+        <field name="current_holder_id" ref="assetflow_demo_emp_priya"/>
+        <field name="current_department_id" ref="assetflow_demo_dept_engineering"/>
+        <field name="expected_return_date">2026-08-15</field>
+    </record>
+
+    <record id="assetflow_demo_asset_projector" model="assetflow.asset">
+        <field name="name">Projector</field>
+        <field name="asset_tag">AF-0062</field>
+        <field name="category_id" ref="assetflow_demo_cat_electronics"/>
+        <field name="serial_number">SN-PROJ-0062</field>
+        <field name="acquisition_date">2024-05-20</field>
+        <field name="acquisition_cost">1500.0</field>
+        <field name="condition">fair</field>
+        <field name="location">HQ floor 2</field>
+        <field name="status">under_maintenance</field>
+        <field name="is_bookable">False</field>
+    </record>
+
+    <record id="assetflow_demo_asset_forklift" model="assetflow.asset">
+        <field name="name">Forklift</field>
+        <field name="asset_tag">AF-0078</field>
+        <field name="category_id" ref="assetflow_demo_cat_vehicles"/>
+        <field name="serial_number">SN-FORK-0078</field>
+        <field name="acquisition_date">2023-09-12</field>
+        <field name="acquisition_cost">15000.0</field>
+        <field name="condition">fair</field>
+        <field name="location">Warehouse A</field>
+        <field name="status">under_maintenance</field>
+        <field name="is_bookable">False</field>
+        <field name="current_department_id" ref="assetflow_demo_dept_operations"/>
+    </record>
+
+    <record id="assetflow_demo_asset_chair_b2" model="assetflow.asset">
+        <field name="name">Conference Chair B2</field>
+        <field name="asset_tag">AF-0002</field>
+        <field name="category_id" ref="assetflow_demo_cat_furniture"/>
+        <field name="serial_number">SN-AVAIL-2</field>
+        <field name="acquisition_date">2025-01-10</field>
+        <field name="acquisition_cost">350.0</field>
+        <field name="condition">good</field>
+        <field name="location">Room B2</field>
+        <field name="status">available</field>
+        <field name="is_bookable">True</field>
+    </record>
+</odoo>

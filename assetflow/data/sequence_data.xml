@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="seq_assetflow_asset_tag" model="ir.sequence">
+        <field name="name">AssetFlow Asset Tag</field>
+        <field name="code">assetflow.asset.tag</field>
+        <field name="prefix">AF-</field>
+        <field name="padding">4</field>
+        <field name="implementation">no_gap</field>
+    </record>
+</odoo>

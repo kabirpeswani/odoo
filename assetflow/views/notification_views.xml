@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_assetflow_notification_tree" model="ir.ui.view">
+        <field name="name">assetflow.notification.tree</field>
+        <field name="model">assetflow.notification</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="timestamp"/>
+                <field name="type"/>
+                <field name="title"/>
+                <field name="message"/>
+                <field name="is_read"/>
+                <field name="user_id"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_assetflow_notification_form" model="ir.ui.view">
+        <field name="name">assetflow.notification.form</field>
+        <field name="model">assetflow.notification</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="user_id"/>
+                        <field name="type"/>
+                        <field name="title"/>
+                        <field name="message"/>
+                        <field name="is_read"/>
+                        <field name="timestamp"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+</odoo>

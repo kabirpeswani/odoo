@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_assetflow_employee_tree" model="ir.ui.view">
+        <field name="name">assetflow.employee.tree</field>
+        <field name="model">assetflow.employee</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="email"/>
+                <field name="department_id"/>
+                <field name="role"/>
+                <field name="status"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_assetflow_employee_form" model="ir.ui.view">
+        <field name="name">assetflow.employee.form</field>
+        <field name="model">assetflow.employee</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="email"/>
+                            <field name="phone"/>
+                            <field name="department_id"/>
+                            <field name="role"/>
+                            <field name="status"/>
+                            <field name="user_id"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page name="allocations" string="Allocated Assets">
+                            <field name="allocated_asset_ids">
+                                <tree>
+                                    <field name="asset_tag"/>
+                                    <field name="name"/>
+                                    <field name="expected_return_date"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page name="bookings" string="Bookings">
+                            <field name="booking_ids">
+                                <tree>
+                                    <field name="asset_id"/>
+                                    <field name="start_time"/>
+                                    <field name="end_time"/>
+                                    <field name="status"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page name="maintenance" string="Maintenance Requests">
+                            <field name="maintenance_request_ids">
+                                <tree>
+                                    <field name="asset_id"/>
+                                    <field name="issue_description"/>
+                                    <field name="priority"/>
+                                    <field name="status"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_assetflow_employee_search" model="ir.ui.view">
+        <field name="name">assetflow.employee.search</field>
+        <field name="model">assetflow.employee</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="email"/>
+                <field name="department_id"/>
+                <filter name="active" string="Active" domain="[('status','=','active')]"/>
+                <filter name="admin" string="Admin" domain="[('role','=','admin')]"/>
+                <filter name="asset_manager" string="Asset Manager" domain="[('role','=','asset_manager')]"/>
+                <filter name="department_head" string="Department Head" domain="[('role','=','department_head')]"/>
+                <filter name="employee" string="Employee" domain="[('role','=','employee')]"/>
+            </search>
+        </field>
+    </record>
+</odoo>

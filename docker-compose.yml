@@ -1,0 +1,32 @@
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: assetflow
+      POSTGRES_USER: odoo
+      POSTGRES_PASSWORD: odoo
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U odoo -d assetflow"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  odoo:
+    image: odoo:17
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8069:8069"
+    volumes:
+      - ./assetflow:/mnt/extra-addons/assetflow
+      - odoo-data:/var/lib/odoo
+      - ./scripts/odoo.conf:/etc/odoo/odoo.conf
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+  odoo-data:

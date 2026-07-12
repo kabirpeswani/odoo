@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_assetflow_booking_tree" model="ir.ui.view">
+        <field name="name">assetflow.booking.tree</field>
+        <field name="model">assetflow.booking</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="asset_id"/>
+                <field name="employee_id"/>
+                <field name="start_time"/>
+                <field name="end_time"/>
+                <field name="status"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_assetflow_booking_form" model="ir.ui.view">
+        <field name="name">assetflow.booking.form</field>
+        <field name="model">assetflow.booking</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <field name="status" widget="statusbar" statusbar_visible="upcoming,ongoing,completed,cancelled"/>
+                    <button name="action_cancel" string="Cancel Booking" type="object" class="btn-danger"
+                        attrs="{'invisible': [('status', 'not in', ('upcoming','ongoing'))]}"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="asset_id"/>
+                            <field name="employee_id"/>
+                        </group>
+                        <group>
+                            <field name="start_time"/>
+                            <field name="end_time"/>
+                        </group>
+                    </group>
+                    <field name="notes"/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_assetflow_booking_calendar" model="ir.ui.view">
+        <field name="name">assetflow.booking.calendar</field>
+        <field name="model">assetflow.booking</field>
+        <field name="arch" type="xml">
+            <calendar date_start="start_time" date_stop="end_time" color="asset_id">
+                <field name="employee_id"/>
+            </calendar>
+        </field>
+    </record>
+
+    <record id="view_assetflow_booking_search" model="ir.ui.view">
+        <field name="name">assetflow.booking.search</field>
+        <field name="model">assetflow.booking</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="asset_id"/>
+                <field name="employee_id"/>
+                <filter name="upcoming" string="Upcoming" domain="[('status','=','upcoming')]"/>
+                <filter name="ongoing" string="Ongoing" domain="[('status','=','ongoing')]"/>
+                <filter name="completed" string="Completed" domain="[('status','=','completed')]"/>
+            </search>
+        </field>
+    </record>
+</odoo>

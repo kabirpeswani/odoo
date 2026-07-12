@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="seed_category_electronics" model="assetflow.category">
+        <field name="name">Electronics</field>
+    </record>
+    <record id="seed_category_furniture" model="assetflow.category">
+        <field name="name">Furniture</field>
+    </record>
+    <record id="seed_category_vehicles" model="assetflow.category">
+        <field name="name">Vehicles</field>
+    </record>
+    <record id="seed_category_spaces" model="assetflow.category">
+        <field name="name">Shared Spaces</field>
+    </record>
+</odoo>

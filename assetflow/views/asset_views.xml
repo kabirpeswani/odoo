@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_assetflow_asset_tree" model="ir.ui.view">
+        <field name="name">assetflow.asset.tree</field>
+        <field name="model">assetflow.asset</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="asset_tag"/>
+                <field name="name"/>
+                <field name="category_id"/>
+                <field name="status" decoration-danger="status in ('lost','disposed')" decoration-warning="status == 'under_maintenance'"/>
+                <field name="condition"/>
+                <field name="current_holder_id"/>
+                <field name="current_department_id"/>
+                <field name="location"/>
+                <field name="is_bookable"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_assetflow_asset_form" model="ir.ui.view">
+        <field name="name">assetflow.asset.form</field>
+        <field name="model">assetflow.asset</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <field name="status" widget="statusbar" statusbar_visible="available,allocated,under_maintenance,lost,retired,disposed"/>
+                    <button name="action_allocate" string="Allocate" type="object" class="btn-primary"
+                        attrs="{'invisible': [('status', '!=', 'available')]}"/>
+                    <button name="action_set_lost" string="Mark Lost" type="object"
+                        attrs="{'invisible': [('status', 'not in', ('allocated','available','under_maintenance'))]}"/>
+                    <button name="action_set_retired" string="Retire" type="object"
+                        attrs="{'invisible': [('status', 'not in', ('available','allocated'))]}"/>
+                    <button name="action_set_disposed" string="Dispose" type="object"
+                        attrs="{'invisible': [('status', 'not in', ('retired','lost'))]}"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="asset_tag"/>
+                            <field name="category_id"/>
+                            <field name="serial_number"/>
+                            <field name="status" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="acquisition_date"/>
+                            <field name="acquisition_cost"/>
+                            <field name="condition"/>
+                            <field name="location"/>
+                            <field name="is_bookable"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="current_holder_id"/>
+                        <field name="current_department_id"/>
+                        <field name="expected_return_date"/>
+                    </group>
+                    <field name="photo" widget="image"/>
+                    <notebook>
+                        <page name="allocation_history" string="Allocation History">
+                            <field name="allocation_ids">
+                                <tree>
+                                    <field name="employee_id"/>
+                                    <field name="department_id"/>
+                                    <field name="allocation_date"/>
+                                    <field name="expected_return_date"/>
+                                    <field name="state"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page name="maintenance_history" string="Maintenance History">
+                            <field name="maintenance_ids">
+                                <tree>
+                                    <field name="request_date"/>
+                                    <field name="issue_description"/>
+                                    <field name="priority"/>
+                                    <field name="status"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page name="bookings" string="Bookings">
+                            <field name="booking_ids">
+                                <tree>
+                                    <field name="employee_id"/>
+                                    <field name="start_time"/>
+                                    <field name="end_time"/>
+                                    <field name="status"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_assetflow_asset_search" model="ir.ui.view">
+        <field name="name">assetflow.asset.search</field>
+        <field name="model">assetflow.asset</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="asset_tag"/>
+                <field name="name"/>
+                <field name="serial_number"/>
+                <field name="location"/>
+                <field name="category_id"/>
+                <field name="current_holder_id"/>
+                <field name="current_department_id"/>
+                <filter name="available" string="Available" domain="[('status','=','available')]"/>
+                <filter name="allocated" string="Allocated" domain="[('status','=','allocated')]"/>
+                <filter name="under_maintenance" string="Under Maintenance" domain="[('status','=','under_maintenance')]"/>
+                <filter name="bookable" string="Bookable Resources" domain="[('is_bookable','=',True)]"/>
+                <separator/>
+                <filter name="overdue" string="Overdue Returns" domain="[('expected_return_date','&lt;',context_today().strftime('%Y-%m-%d')),('status','=','allocated')]"/>
+            </search>
+        </field>
+    </record>
+</odoo>

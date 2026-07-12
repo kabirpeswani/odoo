@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_assetflow_allocation_tree" model="ir.ui.view">
+        <field name="name">assetflow.allocation.tree</field>
+        <field name="model">assetflow.allocation</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="asset_id"/>
+                <field name="employee_id"/>
+                <field name="department_id"/>
+                <field name="allocation_date"/>
+                <field name="expected_return_date" decoration-danger="expected_return_date and expected_return_date &lt; context_today().strftime('%Y-%m-%d') and state == 'active'"/>
+                <field name="state"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_assetflow_allocation_form" model="ir.ui.view">
+        <field name="name">assetflow.allocation.form</field>
+        <field name="model">assetflow.allocation</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <field name="state" widget="statusbar" statusbar_visible="active,returned"/>
+                    <button name="action_return" string="Mark Returned" type="object" class="btn-primary"
+                        attrs="{'invisible': [('state', '!=', 'active')]}"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="asset_id"/>
+                            <field name="employee_id"/>
+                            <field name="department_id"/>
+                        </group>
+                        <group>
+                            <field name="allocation_date"/>
+                            <field name="expected_return_date"/>
+                            <field name="actual_return_date"/>
+                        </group>
+                    </group>
+                    <field name="notes"/>
+                    <field name="return_condition" placeholder="Condition check-in notes on return..."/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+</odoo>
