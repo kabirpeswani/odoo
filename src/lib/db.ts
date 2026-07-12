@@ -133,7 +133,9 @@ const generateSeedData = (): DbSchema => {
   const employees: Employee[] = [
     { id: 'emp-1', name: 'Priya Shah', email: 'priya@assetflow.com', departmentId: 'dep-1', role: 'Department Head', status: 'Active' },
     { id: 'emp-2', name: 'Raj Sharma', email: 'raj@assetflow.com', departmentId: 'dep-2', role: 'Asset Manager', status: 'Active' },
-    { id: 'emp-3', name: 'Kabir Peswani', email: 'kabir@assetflow.com', departmentId: 'dep-3', role: 'Admin', status: 'Active' }
+    { id: 'emp-3', name: 'Kabir Peswani', email: 'kabir@assetflow.com', departmentId: 'dep-3', role: 'Admin', status: 'Active' },
+    { id: 'emp-4', name: 'Ananya Rao', email: 'ananya@assetflow.com', departmentId: 'dep-1', role: 'Employee', status: 'Active' },
+    { id: 'emp-5', name: 'Siddharth Iqbal', email: 'siddharth@assetflow.com', departmentId: 'dep-1', role: 'Employee', status: 'Active' }
   ];
 
   const assets: Asset[] = [];
@@ -143,13 +145,13 @@ const generateSeedData = (): DbSchema => {
     if (i === 3) {
       assets.push({
         id: 'AF-0003',
-        name: 'ac unit',
+        name: 'Dell laptop',
         categoryId: 'cat-1',
-        serialNumber: 'SN-AC-0003',
+        serialNumber: 'SN-DELL-0003',
         acquisitionDate: '2025-01-10',
-        acquisitionCost: 850,
-        condition: 'Fair',
-        location: 'HQ Floor 2',
+        acquisitionCost: 1200,
+        condition: 'Good',
+        location: 'Desk E12',
         status: 'Available',
         isBookable: false,
         currentHolderId: null,
@@ -204,6 +206,22 @@ const generateSeedData = (): DbSchema => {
         isBookable: false,
         currentHolderId: null,
         currentDepartmentId: 'dep-3',
+        expectedReturnDate: null
+      });
+    } else if (i === 30) {
+      assets.push({
+        id: 'AF-0030',
+        name: 'ac unit',
+        categoryId: 'cat-2',
+        serialNumber: 'SN-AC-0030',
+        acquisitionDate: '2025-01-10',
+        acquisitionCost: 850,
+        condition: 'Fair',
+        location: 'HQ Floor 2',
+        status: 'Available',
+        isBookable: false,
+        currentHolderId: null,
+        currentDepartmentId: null,
         expectedReturnDate: null
       });
     } else if (i === 114) {
@@ -364,6 +382,38 @@ const generateSeedData = (): DbSchema => {
     expectedReturnDate: null
   });
 
+  assets.push({
+    id: 'AF-9921',
+    name: 'Office chair',
+    categoryId: 'cat-2',
+    serialNumber: 'SN-CHAIR-9921',
+    acquisitionDate: '2025-01-10',
+    acquisitionCost: 200,
+    condition: 'Good',
+    location: 'Desk E14',
+    status: 'Available',
+    isBookable: false,
+    currentHolderId: null,
+    currentDepartmentId: null,
+    expectedReturnDate: null
+  });
+
+  assets.push({
+    id: 'AF-9838',
+    name: 'Monitor',
+    categoryId: 'cat-1',
+    serialNumber: 'SN-MON-9838',
+    acquisitionDate: '2025-01-10',
+    acquisitionCost: 350,
+    condition: 'Good',
+    location: 'Desk E15',
+    status: 'Available',
+    isBookable: false,
+    currentHolderId: null,
+    currentDepartmentId: null,
+    expectedReturnDate: null
+  });
+
   // Bookings: 9 total (active/upcoming)
   const bookings: Booking[] = [];
   for (let i = 1; i <= 9; i++) {
@@ -464,7 +514,22 @@ const generateSeedData = (): DbSchema => {
     }
   ];
 
-  const audits: AuditCycle[] = [];
+  const audits: AuditCycle[] = [
+    {
+      id: 'audit-q3-eng',
+      name: 'Q3 audit: Engineering dept',
+      startDate: '2026-07-01',
+      endDate: '2026-07-15',
+      status: 'Active',
+      auditors: ['emp-4', 'emp-5'],
+      assetChecks: {
+        'AF-0003': { status: 'Verified', checkedAt: '2026-07-12T10:00:00Z' },
+        'AF-9921': { status: 'Missing', checkedAt: '2026-07-12T10:15:00Z' },
+        'AF-9838': { status: 'Damaged', checkedAt: '2026-07-12T10:30:00Z' }
+      },
+      discrepancyCount: 2
+    }
+  ];
 
   // Recent logs matching mockup EXACTLY:
   // Laptop AF-0114 - allocated to Priya shah - Engineering
