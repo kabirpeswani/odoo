@@ -1,44 +1,45 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
 :root {
-  --bg-primary: #07090e;
-  --bg-secondary: #0f131a;
-  --bg-card: #151a24;
-  --bg-card-hover: #1c2331;
-  --bg-sidebar: #0b0e14;
+  --bg-primary: #f8f9fa;
+  --bg-secondary: #ffffff;
+  --bg-card: #ffffff;
+  --bg-card-hover: #f9fafb;
+  --bg-sidebar: #ffffff;
+  --bg-header: #714B67; /* Odoo brand purple */
   
-  --border: rgba(255, 255, 255, 0.07);
-  --border-focus: rgba(255, 255, 255, 0.2);
+  --border: #e2e8f0;
+  --border-focus: #714B67;
   
-  --text-primary: #f8fafc;
-  --text-secondary: #94a3b8;
-  --text-muted: #64748b;
+  --text-primary: #212529;
+  --text-secondary: #495057;
+  --text-muted: #868e96;
   
-  --accent-blue: #3b82f6;
-  --accent-blue-glow: rgba(59, 130, 246, 0.15);
+  --accent-purple: #714B67;
+  --accent-purple-glow: rgba(113, 75, 103, 0.1);
   
-  --accent-green: #10b981;
-  --accent-green-glow: rgba(16, 185, 129, 0.15);
+  --accent-blue: #00878a; /* Odoo secondary teal/blue */
+  --accent-blue-glow: rgba(0, 135, 138, 0.1);
   
-  --accent-yellow: #f59e0b;
-  --accent-yellow-glow: rgba(245, 158, 11, 0.15);
+  --accent-green: #24b574;
+  --accent-green-glow: rgba(36, 181, 116, 0.1);
   
-  --accent-purple: #8b5cf6;
-  --accent-purple-glow: rgba(139, 92, 246, 0.15);
+  --accent-yellow: #f0ad4e;
+  --accent-yellow-glow: rgba(240, 173, 78, 0.1);
   
-  --accent-orange: #f97316;
-  --accent-orange-glow: rgba(249, 115, 22, 0.15);
+  --accent-orange: #f27830;
+  --accent-orange-glow: rgba(242, 120, 48, 0.1);
   
-  --accent-red: #ef4444;
-  --accent-red-glow: rgba(239, 68, 68, 0.2);
+  --accent-red: #d9534f;
+  --accent-red-glow: rgba(217, 83, 79, 0.15);
 }
 
 * {
   box-sizing: border-box;
   padding: 0;
   margin: 0;
-  font-family: 'Plus Jakarta Sans', 'Outfit', sans-serif;
-  transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  font-family: 'Inter', sans-serif;
+  transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 body {
@@ -70,37 +71,22 @@ body {
 .glow-card {
   background: var(--bg-card);
   border: 1px solid var(--border);
-  border-radius: 16px;
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.4);
-  backdrop-filter: blur(10px);
-  position: relative;
-  overflow: hidden;
+  border-radius: 6px; /* Odoo uses sharper but clean borders */
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.02);
 }
 
 .glow-card:hover {
   background: var(--bg-card-hover);
-  border-color: rgba(255, 255, 255, 0.12);
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
-}
-
-.glow-blue { --glow-color: var(--accent-blue-glow); --border-hover: var(--accent-blue); }
-.glow-green { --glow-color: var(--accent-green-glow); --border-hover: var(--accent-green); }
-.glow-yellow { --glow-color: var(--accent-yellow-glow); --border-hover: var(--accent-yellow); }
-.glow-purple { --glow-color: var(--accent-purple-glow); --border-hover: var(--accent-purple); }
-.glow-orange { --glow-color: var(--accent-orange-glow); --border-hover: var(--accent-orange); }
-.glow-red { --glow-color: var(--accent-red-glow); --border-hover: var(--accent-red); }
-
-.glow-interactive:hover {
-  box-shadow: 0 0 25px var(--glow-color);
-  border-color: var(--border-hover);
+  border-color: rgba(113, 75, 103, 0.25);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
 }
 
 /* Loader */
 .loader {
-  width: 48px;
-  height: 48px;
-  border: 4px solid var(--border);
-  border-bottom-color: var(--accent-blue);
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--border);
+  border-bottom-color: var(--accent-purple);
   border-radius: 50%;
   display: inline-block;
   box-sizing: border-box;
@@ -119,14 +105,23 @@ body {
 }
 
 @keyframes scaleUp {
-  from { transform: scale(0.95); opacity: 0; }
+  from { transform: scale(0.97); opacity: 0; }
   to { transform: scale(1); opacity: 1; }
 }
 
 .modal-overlay {
-  animation: fadeIn 0.2s ease-out forwards;
+  animation: fadeIn 0.15s ease-out forwards;
 }
 
 .modal-content {
-  animation: scaleUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: scaleUp 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Input styles */
+input, select, textarea {
+  font-family: inherit;
+}
+input:focus, select:focus, textarea:focus {
+  border-color: var(--accent-purple) !important;
+  box-shadow: 0 0 0 3px var(--accent-purple-glow) !important;
 }

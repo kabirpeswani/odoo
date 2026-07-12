@@ -5,12 +5,14 @@ export interface Department {
   id: string;
   name: string;
   headId: string; // Employee ID
+  parentDepartmentId?: string;
   status: 'Active' | 'Inactive';
 }
 
 export interface AssetCategory {
   id: string;
   name: string;
+  fields?: { name: string; type: string; required: boolean }[];
 }
 
 export interface Employee {
@@ -115,9 +117,9 @@ const DB_FILE_PATH = path.join(process.cwd(), 'db.json');
 
 const generateSeedData = (): DbSchema => {
   const departments: Department[] = [
-    { id: 'dep-1', name: 'IT Department', headId: 'emp-2', status: 'Active' },
-    { id: 'dep-2', name: 'Marketing', headId: 'emp-3', status: 'Active' },
-    { id: 'dep-3', name: 'Operations', headId: 'emp-4', status: 'Active' }
+    { id: 'dep-1', name: 'IT Department', headId: 'emp-1', status: 'Active' },
+    { id: 'dep-2', name: 'Marketing', headId: 'emp-2', status: 'Active' },
+    { id: 'dep-3', name: 'Operations', headId: 'emp-3', status: 'Active' }
   ];
 
   const categories: AssetCategory[] = [
@@ -135,69 +137,124 @@ const generateSeedData = (): DbSchema => {
 
   const assets: Asset[] = [];
   
-  // Seed assets to match mockup counts:
-  // Available: 128 (minus bookable ones if they are counted separately, let's make total available exactly 128)
-  for (let i = 1; i <= 128; i++) {
-    assets.push({
-      id: `AF-${i.toString().padStart(4, '0')}`,
-      name: i % 2 === 0 ? 'Ergonomic Task Chair' : 'UltraWide Monitor 34"',
-      categoryId: i % 2 === 0 ? 'cat-2' : 'cat-1',
-      serialNumber: `SN-AVAIL-${i}`,
-      acquisitionDate: '2025-01-10',
-      acquisitionCost: 350,
-      condition: 'Good',
-      location: 'HQ Floor 2',
-      status: 'Available',
-      isBookable: i <= 5 // make first 5 bookable (shared)
-    });
-  }
-
-  // Allocated: 76 total (including 3 overdue ones and 12 upcoming returns)
-  // Let's seed 76 allocated assets
-  for (let i = 129; i <= 204; i++) {
-    let returnDate: string | null = null;
-    
-    // We want 3 overdue returns (due in June 2026, assuming today is July 12, 2026)
-    if (i === 129) {
-      returnDate = '2026-06-25'; // Overdue 1
-    } else if (i === 130) {
-      returnDate = '2026-06-30'; // Overdue 2
-    } else if (i === 131) {
-      returnDate = '2026-07-05'; // Overdue 3
-    } 
-    // We want 12 upcoming returns total (due in next 7 days, let's say between July 12 and July 19, 2026)
-    // Overdue returns are excluded from upcoming returns
-    else if (i >= 132 && i <= 143) {
-      const dayOffset = (i - 132) % 7; // due in 0 to 6 days
-      returnDate = `2026-07-${(12 + dayOffset).toString().padStart(2, '0')}`;
+  // Available loop: 1 to 129
+  for (let i = 1; i <= 129; i++) {
+    if (i === 12) {
+      // Mockup item: Dell Laptop, Allocated, bengaluru
+      assets.push({
+        id: 'AF-0012',
+        name: 'Dell Laptop',
+        categoryId: 'cat-1',
+        serialNumber: 'SN-DELL-0012',
+        acquisitionDate: '2025-03-10',
+        acquisitionCost: 1100,
+        condition: 'Good',
+        location: 'bengaluru',
+        status: 'Allocated',
+        isBookable: false,
+        currentHolderId: 'emp-1', // Priya Shah
+        currentDepartmentId: 'dep-1',
+        expectedReturnDate: '2026-08-15'
+      });
+    } else if (i === 62) {
+      // Mockup item: Projector, Under Maintenance, HQ floor 2
+      assets.push({
+        id: 'AF-0062',
+        name: 'Projector',
+        categoryId: 'cat-1',
+        serialNumber: 'SN-PROJ-0062',
+        acquisitionDate: '2024-05-20',
+        acquisitionCost: 1500,
+        condition: 'Fair',
+        location: 'HQ floor 2',
+        status: 'Under Maintenance',
+        isBookable: false,
+        currentHolderId: null,
+        currentDepartmentId: null,
+        expectedReturnDate: null
+      });
+    } else {
+      assets.push({
+        id: `AF-${i.toString().padStart(4, '0')}`,
+        name: i % 2 === 0 ? 'Ergonomic Task Chair' : 'UltraWide Monitor 34"',
+        categoryId: i % 2 === 0 ? 'cat-2' : 'cat-1',
+        serialNumber: `SN-AVAIL-${i}`,
+        acquisitionDate: '2025-01-10',
+        acquisitionCost: 350,
+        condition: 'Good',
+        location: 'HQ Floor 2',
+        status: 'Available',
+        isBookable: i <= 5, // make first 5 bookable (shared)
+        currentHolderId: null,
+        currentDepartmentId: null,
+        expectedReturnDate: null
+      });
     }
-
-    assets.push({
-      id: `AF-${i.toString().padStart(4, '0')}`,
-      name: i % 3 === 0 ? 'ThinkPad Laptop' : i % 3 === 1 ? 'MacBook Pro' : 'Dell Monitor',
-      categoryId: 'cat-1',
-      serialNumber: `SN-ALLOC-${i}`,
-      acquisitionDate: '2024-11-15',
-      acquisitionCost: 1200,
-      condition: 'Good',
-      location: 'Remote Work',
-      status: 'Allocated',
-      isBookable: false,
-      currentHolderId: 'emp-1',
-      currentDepartmentId: 'dep-1',
-      expectedReturnDate: returnDate
-    });
   }
 
-  // Maintenance: 4 assets
-  for (let i = 205; i <= 208; i++) {
+  // Allocated loop: 130 to 205
+  for (let i = 130; i <= 205; i++) {
+    if (i === 201) {
+      // Mockup item: Office chair, Available, Warehouse
+      assets.push({
+        id: 'AF-0201',
+        name: 'Office chair',
+        categoryId: 'cat-2',
+        serialNumber: 'SN-CHAIR-0201',
+        acquisitionDate: '2024-09-12',
+        acquisitionCost: 200,
+        condition: 'Good',
+        location: 'Warehouse',
+        status: 'Available',
+        isBookable: false,
+        currentHolderId: null,
+        currentDepartmentId: null,
+        expectedReturnDate: null
+      });
+    } else {
+      let returnDate: string | null = null;
+      
+      // We want 3 overdue returns (due in June 2026, assuming today is July 12, 2026)
+      if (i === 130) {
+        returnDate = '2026-06-25'; // Overdue 1
+      } else if (i === 131) {
+        returnDate = '2026-06-30'; // Overdue 2
+      } else if (i === 132) {
+        returnDate = '2026-07-05'; // Overdue 3
+      } 
+      // We want 12 upcoming returns total (due in next 7 days, let's say between July 12 and July 19, 2026)
+      else if (i >= 133 && i <= 144) {
+        const dayOffset = (i - 133) % 7; // due in 0 to 6 days
+        returnDate = `2026-07-${(12 + dayOffset).toString().padStart(2, '0')}`;
+      }
+
+      assets.push({
+        id: `AF-${i.toString().padStart(4, '0')}`,
+        name: i % 3 === 0 ? 'ThinkPad Laptop' : i % 3 === 1 ? 'MacBook Pro' : 'Dell Monitor',
+        categoryId: 'cat-1',
+        serialNumber: `SN-ALLOC-${i}`,
+        acquisitionDate: '2024-11-15',
+        acquisitionCost: 1200,
+        condition: 'Good',
+        location: 'Remote Work',
+        status: 'Allocated',
+        isBookable: false,
+        currentHolderId: 'emp-1',
+        currentDepartmentId: 'dep-1',
+        expectedReturnDate: returnDate
+      });
+    }
+  }
+
+  // Maintenance loop: 206 to 208
+  for (let i = 206; i <= 208; i++) {
     assets.push({
       id: `AF-${i.toString().padStart(4, '0')}`,
-      name: i === 205 ? 'Projector AF-0062' : 'Office Shuttle Van',
-      categoryId: i === 205 ? 'cat-1' : 'cat-3',
+      name: 'Office Shuttle Van',
+      categoryId: 'cat-3',
       serialNumber: `SN-MAINT-${i}`,
-      acquisitionDate: '2023-05-12',
-      acquisitionCost: 25000,
+      acquisitionDate: '2022-08-11',
+      acquisitionCost: 45000,
       condition: 'Fair',
       location: 'Service Garage',
       status: 'Under Maintenance',
@@ -238,7 +295,7 @@ const generateSeedData = (): DbSchema => {
   const maintenance: MaintenanceRequest[] = [
     {
       id: 'mt-1',
-      assetId: 'AF-205',
+      assetId: 'AF-0062',
       issueDescription: 'Bulb burned out',
       priority: 'High',
       status: 'Resolved',
@@ -256,7 +313,7 @@ const generateSeedData = (): DbSchema => {
   const logs: ActivityLog[] = [
     {
       id: 'log-1',
-      userId: 'emp-2',
+      userId: 'emp-1',
       userName: 'System',
       action: 'ALLOCATE',
       details: 'Laptop AF-0114 - allocated to Priya shah - IT dept',
