@@ -252,7 +252,9 @@ export default function Dashboard() {
           <Link href="/reports" style={{ textDecoration: 'none' }}>
             <div style={{ padding: '10px 14px', color: 'var(--text-secondary)', fontWeight: 500, borderRadius: '6px', cursor: 'pointer' }}>Reports</div>
           </Link>
-          <div style={{ padding: '10px 14px', color: 'var(--text-secondary)', fontWeight: 500, cursor: 'default' }}>Notifications</div>
+          <Link href="/notifications" style={{ textDecoration: 'none' }}>
+            <div style={{ padding: '10px 14px', color: 'var(--text-secondary)', fontWeight: 500, borderRadius: '6px', cursor: 'pointer' }}>Notifications</div>
+          </Link>
 
         </aside>
 
