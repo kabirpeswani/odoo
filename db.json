@@ -2,7 +2,7 @@
   "departments": [
     {
       "id": "dep-1",
-      "name": "IT Department",
+      "name": "Engineering",
       "headId": "emp-1",
       "status": "Active"
     },
@@ -96,15 +96,15 @@
     },
     {
       "id": "AF-0003",
-      "name": "UltraWide Monitor 34\"",
+      "name": "ac unit",
       "categoryId": "cat-1",
-      "serialNumber": "SN-AVAIL-3",
+      "serialNumber": "SN-AC-0003",
       "acquisitionDate": "2025-01-10",
-      "acquisitionCost": 350,
-      "condition": "Good",
+      "acquisitionCost": 850,
+      "condition": "Fair",
       "location": "HQ Floor 2",
-      "status": "Available",
-      "isBookable": true,
+      "status": "Under Maintenance",
+      "isBookable": false,
       "currentHolderId": null,
       "currentDepartmentId": null,
       "expectedReturnDate": null
@@ -988,7 +988,7 @@
       "acquisitionCost": 1500,
       "condition": "Fair",
       "location": "HQ floor 2",
-      "status": "Under Maintenance",
+      "status": "Available",
       "isBookable": false,
       "currentHolderId": null,
       "currentDepartmentId": null,
@@ -1221,17 +1221,17 @@
     },
     {
       "id": "AF-0078",
-      "name": "Ergonomic Task Chair",
-      "categoryId": "cat-2",
-      "serialNumber": "SN-AVAIL-78",
-      "acquisitionDate": "2025-01-10",
-      "acquisitionCost": 350,
-      "condition": "Good",
-      "location": "HQ Floor 2",
-      "status": "Available",
+      "name": "forklift",
+      "categoryId": "cat-3",
+      "serialNumber": "SN-FORK-0078",
+      "acquisitionDate": "2023-09-12",
+      "acquisitionCost": 15000,
+      "condition": "Fair",
+      "location": "Warehouse A",
+      "status": "Under Maintenance",
       "isBookable": false,
       "currentHolderId": null,
-      "currentDepartmentId": null,
+      "currentDepartmentId": "dep-3",
       "expectedReturnDate": null
     },
     {
@@ -1761,18 +1761,18 @@
     },
     {
       "id": "AF-0114",
-      "name": "Ergonomic Task Chair",
-      "categoryId": "cat-2",
-      "serialNumber": "SN-AVAIL-114",
+      "name": "Dell laptop",
+      "categoryId": "cat-1",
+      "serialNumber": "SN-DELL-0114",
       "acquisitionDate": "2025-01-10",
-      "acquisitionCost": 350,
+      "acquisitionCost": 1200,
       "condition": "Good",
       "location": "HQ Floor 2",
-      "status": "Available",
+      "status": "Allocated",
       "isBookable": false,
-      "currentHolderId": null,
-      "currentDepartmentId": null,
-      "expectedReturnDate": null
+      "currentHolderId": "emp-1",
+      "currentDepartmentId": "dep-1",
+      "expectedReturnDate": "2026-08-15"
     },
     {
       "id": "AF-0115",
@@ -3183,6 +3183,51 @@
       "currentHolderId": null,
       "currentDepartmentId": "dep-3",
       "expectedReturnDate": null
+    },
+    {
+      "id": "AF-0210",
+      "name": "Conference room B2",
+      "categoryId": "cat-4",
+      "serialNumber": "SN-ROOM-B2",
+      "acquisitionDate": "2024-01-10",
+      "acquisitionCost": 10000,
+      "condition": "Good",
+      "location": "HQ Floor 2",
+      "status": "Available",
+      "isBookable": true,
+      "currentHolderId": null,
+      "currentDepartmentId": null,
+      "expectedReturnDate": null
+    },
+    {
+      "id": "AF-0897",
+      "name": "Printer",
+      "categoryId": "cat-1",
+      "serialNumber": "SN-PRINT-0897",
+      "acquisitionDate": "2025-02-18",
+      "acquisitionCost": 450,
+      "condition": "Fair",
+      "location": "HQ Floor 2",
+      "status": "Available",
+      "isBookable": false,
+      "currentHolderId": null,
+      "currentDepartmentId": null,
+      "expectedReturnDate": null
+    },
+    {
+      "id": "AF-0873",
+      "name": "Chair",
+      "categoryId": "cat-2",
+      "serialNumber": "SN-CHAIR-0873",
+      "acquisitionDate": "2025-01-10",
+      "acquisitionCost": 150,
+      "condition": "Good",
+      "location": "Office Room 1",
+      "status": "Under Maintenance",
+      "isBookable": false,
+      "currentHolderId": null,
+      "currentDepartmentId": null,
+      "expectedReturnDate": null
     }
   ],
   "bookings": [
@@ -3257,6 +3302,24 @@
       "startTime": "2026-07-12T19:00",
       "endTime": "2026-07-12T20:00",
       "status": "Upcoming"
+    },
+    {
+      "id": "bk-mockup-b2",
+      "assetId": "AF-0210",
+      "employeeId": "emp-1",
+      "startTime": "2026-07-07T09:00:00",
+      "endTime": "2026-07-07T10:00:00",
+      "status": "Completed",
+      "notes": "Booked - Procurement Team - 9 to 10"
+    },
+    {
+      "id": "bk-mockup-b2-today",
+      "assetId": "AF-0210",
+      "employeeId": "emp-1",
+      "startTime": "2026-07-12T09:00:00",
+      "endTime": "2026-07-12T10:00:00",
+      "status": "Ongoing",
+      "notes": "Booked - Procurement Team - 9 to 10"
     }
   ],
   "transfers": [
@@ -3289,11 +3352,50 @@
     {
       "id": "mt-1",
       "assetId": "AF-0062",
-      "issueDescription": "Bulb burned out",
+      "issueDescription": "Projector bulb not turning on",
       "priority": "High",
-      "status": "Resolved",
+      "status": "Pending",
       "requestedById": "emp-1",
       "requestDate": "2026-07-10"
+    },
+    {
+      "id": "mt-2",
+      "assetId": "AF-0003",
+      "issueDescription": "ac unit noisy compressor",
+      "priority": "Medium",
+      "status": "Approved",
+      "requestedById": "emp-1",
+      "requestDate": "2026-07-08"
+    },
+    {
+      "id": "mt-3",
+      "assetId": "AF-0078",
+      "issueDescription": "forklift",
+      "priority": "High",
+      "status": "Technician Assigned",
+      "requestedById": "emp-2",
+      "requestDate": "2026-07-06",
+      "notes": "tech: R varma"
+    },
+    {
+      "id": "mt-4",
+      "assetId": "AF-0897",
+      "issueDescription": "Printer Jam",
+      "priority": "Low",
+      "status": "Resolved",
+      "requestedById": "emp-1",
+      "requestDate": "2026-07-05",
+      "notes": "parts ordered"
+    },
+    {
+      "id": "mt-5",
+      "assetId": "AF-0873",
+      "issueDescription": "Chair repair",
+      "priority": "Low",
+      "status": "In Progress",
+      "requestedById": "emp-2",
+      "requestDate": "2026-07-04",
+      "notes": "resolved 7 Jul"
     }
   ],
   "audits": [],
@@ -3303,7 +3405,7 @@
       "userId": "emp-1",
       "userName": "System",
       "action": "ALLOCATE",
-      "details": "Laptop AF-0114 - allocated to Priya shah - IT dept",
+      "details": "Laptop AF-0114 - allocated to Priya shah - Engineering",
       "timestamp": "2026-07-12T14:15:00Z"
     },
     {
@@ -3321,7 +3423,330 @@
       "action": "RESOLVE_MAINTENANCE",
       "details": "Projector AF-0062 - maintenance resolved",
       "timestamp": "2026-07-12T14:05:00Z"
+    },
+    {
+      "id": "log-alloc-114",
+      "userId": "emp-2",
+      "userName": "Raj Sharma",
+      "action": "ALLOCATE",
+      "details": "Laptop AF-0114 - allocated to Priya shah - Engineering",
+      "timestamp": "2026-03-12T10:00:00Z"
+    },
+    {
+      "id": "log-ret-114",
+      "userId": "emp-1",
+      "userName": "System",
+      "action": "RETURN",
+      "details": "Laptop AF-0114 - returned by Arjun Nair - condition: good",
+      "timestamp": "2026-01-04T15:30:00Z"
+    },
+    {
+      "id": "log-1783854604825",
+      "userId": "emp-3",
+      "userName": "Kabir Peswani",
+      "action": "UPDATE_MAINTENANCE",
+      "details": "Printer AF-0897 - maintenance status updated from In Progress to Pending",
+      "timestamp": "2026-07-12T11:10:04.825Z"
+    },
+    {
+      "id": "log-1783854606600",
+      "userId": "emp-3",
+      "userName": "Kabir Peswani",
+      "action": "UPDATE_MAINTENANCE",
+      "details": "Printer AF-0897 - maintenance status updated from Pending to Approved",
+      "timestamp": "2026-07-12T11:10:06.600Z"
+    },
+    {
+      "id": "log-1783854662027",
+      "userId": "emp-3",
+      "userName": "Kabir Peswani",
+      "action": "UPDATE_MAINTENANCE",
+      "details": "Printer AF-0897 - maintenance status updated from Approved to Technician Assigned",
+      "timestamp": "2026-07-12T11:11:02.027Z"
+    },
+    {
+      "id": "log-1783854663127",
+      "userId": "emp-3",
+      "userName": "Kabir Peswani",
+      "action": "UPDATE_MAINTENANCE",
+      "details": "Printer AF-0897 - maintenance status updated from Technician Assigned to Approved",
+      "timestamp": "2026-07-12T11:11:03.127Z"
+    },
+    {
+      "id": "log-1783854664104",
+      "userId": "emp-3",
+      "userName": "Kabir Peswani",
+      "action": "UPDATE_MAINTENANCE",
+      "details": "Printer AF-0897 - maintenance status updated from Approved to Pending",
+      "timestamp": "2026-07-12T11:11:04.104Z"
+    },
+    {
+      "id": "log-1783854667662",
+      "userId": "emp-3",
+      "userName": "Kabir Peswani",
+      "action": "UPDATE_MAINTENANCE",
+      "details": "Printer AF-0897 - maintenance status updated from Pending to In Progress",
+      "timestamp": "2026-07-12T11:11:07.662Z"
+    },
+    {
+      "id": "log-1783854669828",
+      "userId": "emp-3",
+      "userName": "Kabir Peswani",
+      "action": "UPDATE_MAINTENANCE",
+      "details": "Printer AF-0897 - maintenance status updated from In Progress to Resolved",
+      "timestamp": "2026-07-12T11:11:09.828Z"
+    },
+    {
+      "id": "log-1783854672340",
+      "userId": "emp-3",
+      "userName": "Kabir Peswani",
+      "action": "UPDATE_MAINTENANCE",
+      "details": "Chair AF-0873 - maintenance status updated from Resolved to In Progress",
+      "timestamp": "2026-07-12T11:11:12.340Z"
+    },
+    {
+      "id": "log-1783854677754",
+      "userId": "emp-3",
+      "userName": "Kabir Peswani",
+      "action": "UPDATE_MAINTENANCE",
+      "details": "Projector AF-0062 - maintenance status updated from Pending to Approved",
+      "timestamp": "2026-07-12T11:11:17.754Z"
+    },
+    {
+      "id": "log-1783854678762",
+      "userId": "emp-3",
+      "userName": "Kabir Peswani",
+      "action": "UPDATE_MAINTENANCE",
+      "details": "ac unit AF-0003 - maintenance status updated from Approved to Pending",
+      "timestamp": "2026-07-12T11:11:18.762Z"
+    },
+    {
+      "id": "log-1783854679582",
+      "userId": "emp-3",
+      "userName": "Kabir Peswani",
+      "action": "UPDATE_MAINTENANCE",
+      "details": "ac unit AF-0003 - maintenance status updated from Pending to Approved",
+      "timestamp": "2026-07-12T11:11:19.582Z"
+    },
+    {
+      "id": "log-1783854680283",
+      "userId": "emp-3",
+      "userName": "Kabir Peswani",
+      "action": "UPDATE_MAINTENANCE",
+      "details": "ac unit AF-0003 - maintenance status updated from Approved to Pending",
+      "timestamp": "2026-07-12T11:11:20.283Z"
+    },
+    {
+      "id": "log-1783854681084",
+      "userId": "emp-3",
+      "userName": "Kabir Peswani",
+      "action": "UPDATE_MAINTENANCE",
+      "details": "ac unit AF-0003 - maintenance status updated from Pending to Approved",
+      "timestamp": "2026-07-12T11:11:21.084Z"
+    },
+    {
+      "id": "log-1783854681855",
+      "userId": "emp-3",
+      "userName": "Kabir Peswani",
+      "action": "UPDATE_MAINTENANCE",
+      "details": "ac unit AF-0003 - maintenance status updated from Approved to Pending",
+      "timestamp": "2026-07-12T11:11:21.855Z"
+    },
+    {
+      "id": "log-1783854682627",
+      "userId": "emp-3",
+      "userName": "Kabir Peswani",
+      "action": "UPDATE_MAINTENANCE",
+      "details": "ac unit AF-0003 - maintenance status updated from Pending to Approved",
+      "timestamp": "2026-07-12T11:11:22.627Z"
+    },
+    {
+      "id": "log-1783854683780",
+      "userId": "emp-3",
+      "userName": "Kabir Peswani",
+      "action": "UPDATE_MAINTENANCE",
+      "details": "ac unit AF-0003 - maintenance status updated from Approved to Pending",
+      "timestamp": "2026-07-12T11:11:23.780Z"
+    },
+    {
+      "id": "log-1783854684890",
+      "userId": "emp-3",
+      "userName": "Kabir Peswani",
+      "action": "UPDATE_MAINTENANCE",
+      "details": "Projector AF-0062 - maintenance status updated from Approved to Pending",
+      "timestamp": "2026-07-12T11:11:24.890Z"
+    },
+    {
+      "id": "log-1783854685738",
+      "userId": "emp-3",
+      "userName": "Kabir Peswani",
+      "action": "UPDATE_MAINTENANCE",
+      "details": "ac unit AF-0003 - maintenance status updated from Pending to Approved",
+      "timestamp": "2026-07-12T11:11:25.738Z"
     }
   ],
-  "notifications": []
+  "notifications": [
+    {
+      "id": "ntf-1783854604825",
+      "userId": "emp-1",
+      "title": "Maintenance Request Pending",
+      "message": "Your maintenance request for Printer (AF-0897) is now Pending.",
+      "type": "info",
+      "isRead": false,
+      "timestamp": "2026-07-12T11:10:04.825Z"
+    },
+    {
+      "id": "ntf-1783854606600",
+      "userId": "emp-1",
+      "title": "Maintenance Request Approved",
+      "message": "Your maintenance request for Printer (AF-0897) is now Approved.",
+      "type": "info",
+      "isRead": false,
+      "timestamp": "2026-07-12T11:10:06.600Z"
+    },
+    {
+      "id": "ntf-1783854662027",
+      "userId": "emp-1",
+      "title": "Maintenance Request Technician Assigned",
+      "message": "Your maintenance request for Printer (AF-0897) is now Technician Assigned.",
+      "type": "info",
+      "isRead": false,
+      "timestamp": "2026-07-12T11:11:02.027Z"
+    },
+    {
+      "id": "ntf-1783854663127",
+      "userId": "emp-1",
+      "title": "Maintenance Request Approved",
+      "message": "Your maintenance request for Printer (AF-0897) is now Approved.",
+      "type": "info",
+      "isRead": false,
+      "timestamp": "2026-07-12T11:11:03.127Z"
+    },
+    {
+      "id": "ntf-1783854664104",
+      "userId": "emp-1",
+      "title": "Maintenance Request Pending",
+      "message": "Your maintenance request for Printer (AF-0897) is now Pending.",
+      "type": "info",
+      "isRead": false,
+      "timestamp": "2026-07-12T11:11:04.104Z"
+    },
+    {
+      "id": "ntf-1783854667662",
+      "userId": "emp-1",
+      "title": "Maintenance Request In Progress",
+      "message": "Your maintenance request for Printer (AF-0897) is now In Progress.",
+      "type": "info",
+      "isRead": false,
+      "timestamp": "2026-07-12T11:11:07.662Z"
+    },
+    {
+      "id": "ntf-1783854669828",
+      "userId": "emp-1",
+      "title": "Maintenance Request Resolved",
+      "message": "Your maintenance request for Printer (AF-0897) is now Resolved.",
+      "type": "success",
+      "isRead": false,
+      "timestamp": "2026-07-12T11:11:09.828Z"
+    },
+    {
+      "id": "ntf-1783854672340",
+      "userId": "emp-2",
+      "title": "Maintenance Request In Progress",
+      "message": "Your maintenance request for Chair (AF-0873) is now In Progress.",
+      "type": "info",
+      "isRead": false,
+      "timestamp": "2026-07-12T11:11:12.340Z"
+    },
+    {
+      "id": "ntf-1783854677754",
+      "userId": "emp-1",
+      "title": "Maintenance Request Approved",
+      "message": "Your maintenance request for Projector (AF-0062) is now Approved.",
+      "type": "info",
+      "isRead": false,
+      "timestamp": "2026-07-12T11:11:17.754Z"
+    },
+    {
+      "id": "ntf-1783854678762",
+      "userId": "emp-1",
+      "title": "Maintenance Request Pending",
+      "message": "Your maintenance request for ac unit (AF-0003) is now Pending.",
+      "type": "info",
+      "isRead": false,
+      "timestamp": "2026-07-12T11:11:18.762Z"
+    },
+    {
+      "id": "ntf-1783854679582",
+      "userId": "emp-1",
+      "title": "Maintenance Request Approved",
+      "message": "Your maintenance request for ac unit (AF-0003) is now Approved.",
+      "type": "info",
+      "isRead": false,
+      "timestamp": "2026-07-12T11:11:19.582Z"
+    },
+    {
+      "id": "ntf-1783854680283",
+      "userId": "emp-1",
+      "title": "Maintenance Request Pending",
+      "message": "Your maintenance request for ac unit (AF-0003) is now Pending.",
+      "type": "info",
+      "isRead": false,
+      "timestamp": "2026-07-12T11:11:20.283Z"
+    },
+    {
+      "id": "ntf-1783854681084",
+      "userId": "emp-1",
+      "title": "Maintenance Request Approved",
+      "message": "Your maintenance request for ac unit (AF-0003) is now Approved.",
+      "type": "info",
+      "isRead": false,
+      "timestamp": "2026-07-12T11:11:21.084Z"
+    },
+    {
+      "id": "ntf-1783854681855",
+      "userId": "emp-1",
+      "title": "Maintenance Request Pending",
+      "message": "Your maintenance request for ac unit (AF-0003) is now Pending.",
+      "type": "info",
+      "isRead": false,
+      "timestamp": "2026-07-12T11:11:21.855Z"
+    },
+    {
+      "id": "ntf-1783854682627",
+      "userId": "emp-1",
+      "title": "Maintenance Request Approved",
+      "message": "Your maintenance request for ac unit (AF-0003) is now Approved.",
+      "type": "info",
+      "isRead": false,
+      "timestamp": "2026-07-12T11:11:22.627Z"
+    },
+    {
+      "id": "ntf-1783854683780",
+      "userId": "emp-1",
+      "title": "Maintenance Request Pending",
+      "message": "Your maintenance request for ac unit (AF-0003) is now Pending.",
+      "type": "info",
+      "isRead": false,
+      "timestamp": "2026-07-12T11:11:23.780Z"
+    },
+    {
+      "id": "ntf-1783854684890",
+      "userId": "emp-1",
+      "title": "Maintenance Request Pending",
+      "message": "Your maintenance request for Projector (AF-0062) is now Pending.",
+      "type": "info",
+      "isRead": false,
+      "timestamp": "2026-07-12T11:11:24.890Z"
+    },
+    {
+      "id": "ntf-1783854685738",
+      "userId": "emp-1",
+      "title": "Maintenance Request Approved",
+      "message": "Your maintenance request for ac unit (AF-0003) is now Approved.",
+      "type": "info",
+      "isRead": false,
+      "timestamp": "2026-07-12T11:11:25.738Z"
+    }
+  ]
 }

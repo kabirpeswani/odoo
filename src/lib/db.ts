@@ -47,6 +47,7 @@ export interface Booking {
   startTime: string; // ISO string or YYYY-MM-DD HH:MM
   endTime: string;
   status: 'Upcoming' | 'Ongoing' | 'Completed' | 'Cancelled';
+  notes?: string;
 }
 
 export interface TransferRequest {
@@ -117,7 +118,7 @@ const DB_FILE_PATH = path.join(process.cwd(), 'db.json');
 
 const generateSeedData = (): DbSchema => {
   const departments: Department[] = [
-    { id: 'dep-1', name: 'IT Department', headId: 'emp-1', status: 'Active' },
+    { id: 'dep-1', name: 'Engineering', headId: 'emp-1', status: 'Active' },
     { id: 'dep-2', name: 'Marketing', headId: 'emp-2', status: 'Active' },
     { id: 'dep-3', name: 'Operations', headId: 'emp-3', status: 'Active' }
   ];
@@ -139,7 +140,23 @@ const generateSeedData = (): DbSchema => {
   
   // Available loop: 1 to 129
   for (let i = 1; i <= 129; i++) {
-    if (i === 12) {
+    if (i === 3) {
+      assets.push({
+        id: 'AF-0003',
+        name: 'ac unit',
+        categoryId: 'cat-1',
+        serialNumber: 'SN-AC-0003',
+        acquisitionDate: '2025-01-10',
+        acquisitionCost: 850,
+        condition: 'Fair',
+        location: 'HQ Floor 2',
+        status: 'Available',
+        isBookable: false,
+        currentHolderId: null,
+        currentDepartmentId: null,
+        expectedReturnDate: null
+      });
+    } else if (i === 12) {
       // Mockup item: Dell Laptop, Allocated, bengaluru
       assets.push({
         id: 'AF-0012',
@@ -172,6 +189,38 @@ const generateSeedData = (): DbSchema => {
         currentHolderId: null,
         currentDepartmentId: null,
         expectedReturnDate: null
+      });
+    } else if (i === 78) {
+      assets.push({
+        id: 'AF-0078',
+        name: 'forklift',
+        categoryId: 'cat-3',
+        serialNumber: 'SN-FORK-0078',
+        acquisitionDate: '2023-09-12',
+        acquisitionCost: 15000,
+        condition: 'Fair',
+        location: 'Warehouse A',
+        status: 'Under Maintenance',
+        isBookable: false,
+        currentHolderId: null,
+        currentDepartmentId: 'dep-3',
+        expectedReturnDate: null
+      });
+    } else if (i === 114) {
+      assets.push({
+        id: 'AF-0114',
+        name: 'Dell laptop',
+        categoryId: 'cat-1',
+        serialNumber: 'SN-DELL-0114',
+        acquisitionDate: '2025-01-10',
+        acquisitionCost: 1200,
+        condition: 'Good',
+        location: 'HQ Floor 2',
+        status: 'Allocated',
+        isBookable: false,
+        currentHolderId: 'emp-1', // Priya Shah
+        currentDepartmentId: 'dep-1',
+        expectedReturnDate: '2026-08-15'
       });
     } else {
       assets.push({
@@ -265,6 +314,56 @@ const generateSeedData = (): DbSchema => {
     });
   }
 
+  // Conference room B2 - Shared Space
+  assets.push({
+    id: 'AF-0210',
+    name: 'Conference room B2',
+    categoryId: 'cat-4',
+    serialNumber: 'SN-ROOM-B2',
+    acquisitionDate: '2024-01-10',
+    acquisitionCost: 10000,
+    condition: 'Good',
+    location: 'HQ Floor 2',
+    status: 'Available',
+    isBookable: true,
+    currentHolderId: null,
+    currentDepartmentId: null,
+    expectedReturnDate: null
+  });
+
+  // Mockup maintenance assets
+  assets.push({
+    id: 'AF-0897',
+    name: 'Printer',
+    categoryId: 'cat-1',
+    serialNumber: 'SN-PRINT-0897',
+    acquisitionDate: '2025-02-18',
+    acquisitionCost: 450,
+    condition: 'Fair',
+    location: 'HQ Floor 2',
+    status: 'Under Maintenance',
+    isBookable: false,
+    currentHolderId: null,
+    currentDepartmentId: null,
+    expectedReturnDate: null
+  });
+
+  assets.push({
+    id: 'AF-0873',
+    name: 'Chair',
+    categoryId: 'cat-2',
+    serialNumber: 'SN-CHAIR-0873',
+    acquisitionDate: '2025-01-10',
+    acquisitionCost: 150,
+    condition: 'Good',
+    location: 'Office Room 1',
+    status: 'Available',
+    isBookable: false,
+    currentHolderId: null,
+    currentDepartmentId: null,
+    expectedReturnDate: null
+  });
+
   // Bookings: 9 total (active/upcoming)
   const bookings: Booking[] = [];
   for (let i = 1; i <= 9; i++) {
@@ -277,6 +376,28 @@ const generateSeedData = (): DbSchema => {
       status: i === 1 ? 'Ongoing' : 'Upcoming'
     });
   }
+
+  // Seed mockup booking for Conference room B2 on July 7, 2026 from 9:00 AM to 10:00 AM
+  bookings.push({
+    id: 'bk-mockup-b2',
+    assetId: 'AF-0210',
+    employeeId: 'emp-1',
+    startTime: '2026-07-07T09:00:00',
+    endTime: '2026-07-07T10:00:00',
+    status: 'Completed',
+    notes: 'Booked - Procurement Team - 9 to 10'
+  });
+
+  // Seed mockup booking for Conference room B2 on July 12, 2026 from 9:00 AM to 10:00 AM (for current date testing)
+  bookings.push({
+    id: 'bk-mockup-b2-today',
+    assetId: 'AF-0210',
+    employeeId: 'emp-1',
+    startTime: '2026-07-12T09:00:00',
+    endTime: '2026-07-12T10:00:00',
+    status: 'Ongoing',
+    notes: 'Booked - Procurement Team - 9 to 10'
+  });
 
   // Transfers: 3 pending
   const transfers: TransferRequest[] = [];
@@ -296,18 +417,57 @@ const generateSeedData = (): DbSchema => {
     {
       id: 'mt-1',
       assetId: 'AF-0062',
-      issueDescription: 'Bulb burned out',
+      issueDescription: 'Projector bulb not turning on',
       priority: 'High',
-      status: 'Resolved',
+      status: 'Pending',
       requestedById: 'emp-1',
       requestDate: '2026-07-10'
+    },
+    {
+      id: 'mt-2',
+      assetId: 'AF-0003',
+      issueDescription: 'ac unit noisy compressor',
+      priority: 'Medium',
+      status: 'Approved',
+      requestedById: 'emp-1',
+      requestDate: '2026-07-08'
+    },
+    {
+      id: 'mt-3',
+      assetId: 'AF-0078',
+      issueDescription: 'forklift',
+      priority: 'High',
+      status: 'Technician Assigned',
+      requestedById: 'emp-2',
+      requestDate: '2026-07-06',
+      notes: 'tech: R varma'
+    },
+    {
+      id: 'mt-4',
+      assetId: 'AF-0897',
+      issueDescription: 'Printer Jam',
+      priority: 'Low',
+      status: 'In Progress',
+      requestedById: 'emp-1',
+      requestDate: '2026-07-05',
+      notes: 'parts ordered'
+    },
+    {
+      id: 'mt-5',
+      assetId: 'AF-0873',
+      issueDescription: 'Chair repair',
+      priority: 'Low',
+      status: 'Resolved',
+      requestedById: 'emp-2',
+      requestDate: '2026-07-04',
+      notes: 'resolved 7 Jul'
     }
   ];
 
   const audits: AuditCycle[] = [];
 
   // Recent logs matching mockup EXACTLY:
-  // Laptop AF-0114 - allocated to Priya shah - IT dept
+  // Laptop AF-0114 - allocated to Priya shah - Engineering
   // Room B2 - booking confirmed - 2:00 to 3:00 PM
   // Projector AF-0062 - maintenance resolved
   const logs: ActivityLog[] = [
@@ -316,7 +476,7 @@ const generateSeedData = (): DbSchema => {
       userId: 'emp-1',
       userName: 'System',
       action: 'ALLOCATE',
-      details: 'Laptop AF-0114 - allocated to Priya shah - IT dept',
+      details: 'Laptop AF-0114 - allocated to Priya shah - Engineering',
       timestamp: '2026-07-12T14:15:00Z'
     },
     {
@@ -334,6 +494,22 @@ const generateSeedData = (): DbSchema => {
       action: 'RESOLVE_MAINTENANCE',
       details: 'Projector AF-0062 - maintenance resolved',
       timestamp: '2026-07-12T14:05:00Z'
+    },
+    {
+      id: 'log-alloc-114',
+      userId: 'emp-2',
+      userName: 'Raj Sharma',
+      action: 'ALLOCATE',
+      details: 'Laptop AF-0114 - allocated to Priya shah - Engineering',
+      timestamp: '2026-03-12T10:00:00Z'
+    },
+    {
+      id: 'log-ret-114',
+      userId: 'emp-1',
+      userName: 'System',
+      action: 'RETURN',
+      details: 'Laptop AF-0114 - returned by Arjun Nair - condition: good',
+      timestamp: '2026-01-04T15:30:00Z'
     }
   ];
 
