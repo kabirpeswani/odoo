@@ -19,7 +19,7 @@ PRIORITY_COLORS = {'0': 4, '1': 3, '2': 1}
 class AssetflowMaintenance(models.Model):
     _name = 'assetflow.maintenance'
     _description = 'Maintenance Request'
-    _inherit = ['mail.thread', 'mail.activity.mixin']
+    _inherit = ['assetflow.log.mixin']
     _order = 'priority desc, request_date desc, id desc'
 
     name = fields.Char(
@@ -27,25 +27,25 @@ class AssetflowMaintenance(models.Model):
         default=lambda self: _('New'))
     asset_id = fields.Many2one(
         'assetflow.asset', string='Asset', required=True,
-        ondelete='restrict', tracking=True,
+        ondelete='restrict',
         domain="[('state', 'not in', ('retired', 'disposed'))]")
     category_id = fields.Many2one(
         related='asset_id.category_id', store=True, string='Category')
     requester_id = fields.Many2one(
-        'res.users', string='Reported By', required=True, tracking=True,
+        'res.users', string='Reported By', required=True,
         default=lambda self: self.env.user, domain="[('share', '=', False)]")
     department_id = fields.Many2one(
         'assetflow.department', related='requester_id.department_id',
         store=True)
     technician_id = fields.Many2one(
-        'res.users', string='Technician', tracking=True,
+        'res.users', string='Technician',
         domain="[('share', '=', False)]",
         help="Person carrying out the work once the request is approved.")
 
-    description = fields.Text(required=True, tracking=True)
+    description = fields.Text(required=True)
     priority = fields.Selection(
         [('0', 'Low'), ('1', 'Medium'), ('2', 'High')],
-        default='1', required=True, tracking=True, index=True)
+        default='1', required=True, index=True)
     attachment_ids = fields.Many2many(
         'ir.attachment', 'assetflow_maintenance_attachment_rel',
         'maintenance_id', 'attachment_id', string='Attachments',
@@ -60,7 +60,7 @@ class AssetflowMaintenance(models.Model):
         'res.users', string='Approved By', readonly=True, copy=False)
     rejection_reason = fields.Text(copy=False)
     resolution_notes = fields.Text(copy=False)
-    repair_cost = fields.Monetary(currency_field='currency_id', tracking=True)
+    repair_cost = fields.Monetary(currency_field='currency_id')
     currency_id = fields.Many2one(
         'res.currency', default=lambda self: self.env.company.currency_id,
         required=True)
@@ -71,7 +71,7 @@ class AssetflowMaintenance(models.Model):
          ('rejected', 'Rejected'),
          ('in_progress', 'In Progress'),
          ('resolved', 'Resolved')],
-        default='pending', required=True, tracking=True, index=True,
+        default='pending', required=True, index=True,
         group_expand='_group_expand_state')
     color = fields.Integer(compute='_compute_color', store=True)
 
@@ -145,9 +145,9 @@ class AssetflowMaintenance(models.Model):
                     'assetflow.maintenance') or _('New')
         requests = super().create(vals_list)
         for request in requests:
-            request.message_post(body=_(
+            request._log(_(
                 "Maintenance requested for %s by %s.",
-                request.asset_id.display_name, request.requester_id.name))
+                request.asset_id.display_name, request.requester_id.name), 'maintenance')
         return requests
 
     def unlink(self):
@@ -194,9 +194,9 @@ class AssetflowMaintenance(models.Model):
                 raise UserError(_(
                     "Please state a rejection reason for %s.", request.name))
             request.write({'state': 'rejected'})
-            request.message_post(body=_(
+            request._log(_(
                 "Rejected by %(user)s: %(reason)s",
-                user=self.env.user.name, reason=request.rejection_reason))
+                user=self.env.user.name, reason=request.rejection_reason), 'maintenance')
         return True
 
     def action_start(self):
@@ -222,9 +222,9 @@ class AssetflowMaintenance(models.Model):
                 'resolution_date': fields.Datetime.now(),
             })
             request._restore_asset_state()
-            request.message_post(body=_(
+            request._log(_(
                 "Resolved by %(user)s after %(hours).1f h of work.",
-                user=self.env.user.name, hours=request.total_hours))
+                user=self.env.user.name, hours=request.total_hours), 'maintenance')
         return True
 
     def _restore_asset_state(self):

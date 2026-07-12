@@ -24,19 +24,19 @@ ROLE_GROUPS = [
 class AssetflowDepartment(models.Model):
     _name = 'assetflow.department'
     _description = 'AssetFlow Department'
-    _inherit = ['mail.thread']
+    _inherit = ['assetflow.log.mixin']
     _parent_name = 'parent_id'
     _parent_store = True
     _order = 'complete_name'
 
-    name = fields.Char(required=True, tracking=True)
+    name = fields.Char(required=True)
     code = fields.Char(help="Short code used on reports and audit scopes.")
     complete_name = fields.Char(
         string='Full Path', compute='_compute_complete_name',
         recursive=True, store=True)
     manager_id = fields.Many2one(
         'res.users', string='Department Head',
-        domain="[('share', '=', False)]", tracking=True,
+        domain="[('share', '=', False)]",
         help="Head of department. Automatically granted visibility on every "
              "allocation of this department.")
     parent_id = fields.Many2one(
@@ -49,7 +49,7 @@ class AssetflowDepartment(models.Model):
         'res.users', 'department_id', string='Members')
     state = fields.Selection(
         [('active', 'Active'), ('inactive', 'Inactive')],
-        default='active', required=True, tracking=True)
+        default='active', required=True)
     company_id = fields.Many2one(
         'res.company', default=lambda self: self.env.company, required=True)
 

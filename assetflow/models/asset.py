@@ -40,21 +40,21 @@ STATE_COLORS = {
 class AssetflowAsset(models.Model):
     _name = 'assetflow.asset'
     _description = 'Asset'
-    _inherit = ['mail.thread', 'mail.activity.mixin']
+    _inherit = ['assetflow.log.mixin']
     _order = 'asset_tag desc'
 
     # ------------------------------------------------------------------
     # Identification
     # ------------------------------------------------------------------
-    name = fields.Char(required=True, tracking=True)
+    name = fields.Char(required=True)
     asset_tag = fields.Char(
         string='Asset Tag', required=True, copy=False, readonly=True,
         index=True, default=lambda self: _('New'),
         help="Unique, auto-generated identifier, e.g. AF-0001.")
-    serial_number = fields.Char(copy=False, tracking=True, index=True)
+    serial_number = fields.Char(copy=False, index=True)
     category_id = fields.Many2one(
         'assetflow.asset.category', string='Category',
-        required=True, ondelete='restrict', tracking=True)
+        required=True, ondelete='restrict')
     description = fields.Text()
     image = fields.Image(max_width=1024, max_height=1024)
     active = fields.Boolean(default=True)
@@ -63,9 +63,9 @@ class AssetflowAsset(models.Model):
     # Acquisition & warranty
     # ------------------------------------------------------------------
     acquisition_date = fields.Date(
-        default=fields.Date.context_today, tracking=True)
+        default=fields.Date.context_today)
     acquisition_cost = fields.Monetary(
-        currency_field='currency_id', tracking=True)
+        currency_field='currency_id')
     currency_id = fields.Many2one(
         'res.currency', default=lambda self: self.env.company.currency_id,
         required=True)
@@ -85,9 +85,9 @@ class AssetflowAsset(models.Model):
     condition = fields.Selection(
         [('new', 'New'), ('good', 'Good'),
          ('fair', 'Fair'), ('damaged', 'Damaged')],
-        default='new', required=True, tracking=True)
+        default='new', required=True)
     location = fields.Char(
-        tracking=True, help="Physical location, e.g. 'HQ / Floor 2 / Lab A'.")
+        help="Physical location, e.g. 'HQ / Floor 2 / Lab A'.")
     state = fields.Selection(
         [('available', 'Available'),
          ('allocated', 'Allocated'),
@@ -96,7 +96,7 @@ class AssetflowAsset(models.Model):
          ('lost', 'Lost'),
          ('retired', 'Retired'),
          ('disposed', 'Disposed')],
-        default='available', required=True, tracking=True, index=True,
+        default='available', required=True, index=True,
         group_expand='_group_expand_state')
     bookable = fields.Boolean(
         string='Shared / Bookable',
@@ -288,7 +288,7 @@ class AssetflowAsset(models.Model):
             if reason:
                 body += _(" — %s", reason)
             asset.sudo().write({'state': new_state})
-            asset.message_post(body=body)
+            asset._log(body, 'lifecycle')
 
     def _ensure_operable(self):
         """Raise if the asset is out of circulation."""

@@ -29,7 +29,7 @@ STATE_COLORS = {
 class AssetflowResourceBooking(models.Model):
     _name = 'assetflow.resource.booking'
     _description = 'Resource Booking'
-    _inherit = ['mail.thread']
+    _inherit = ['assetflow.log.mixin']
     _order = 'start_time desc'
 
     name = fields.Char(
@@ -37,22 +37,22 @@ class AssetflowResourceBooking(models.Model):
         default=lambda self: _('New'))
     asset_id = fields.Many2one(
         'assetflow.asset', string='Resource', required=True,
-        ondelete='cascade', tracking=True,
+        ondelete='cascade',
         domain="[('bookable', '=', True), "
                "('state', 'not in', ('lost', 'retired', 'disposed'))]",
         help="Only assets flagged as Shared / Bookable can be booked.")
     user_id = fields.Many2one(
-        'res.users', string='Booked By', required=True, tracking=True,
+        'res.users', string='Booked By', required=True,
         default=lambda self: self.env.user,
         domain="[('share', '=', False)]")
     department_id = fields.Many2one(
         'assetflow.department', related='user_id.department_id', store=True)
 
-    start_time = fields.Datetime(required=True, tracking=True)
-    end_time = fields.Datetime(required=True, tracking=True)
+    start_time = fields.Datetime(required=True)
+    end_time = fields.Datetime(required=True)
     duration = fields.Float(
         string='Duration (Hours)', compute='_compute_duration', store=True)
-    purpose = fields.Char(tracking=True)
+    purpose = fields.Char()
     notes = fields.Text()
 
     state = fields.Selection(
@@ -60,7 +60,7 @@ class AssetflowResourceBooking(models.Model):
          ('ongoing', 'Ongoing'),
          ('completed', 'Completed'),
          ('cancelled', 'Cancelled')],
-        default='upcoming', required=True, tracking=True, index=True,
+        default='upcoming', required=True, index=True,
         group_expand='_group_expand_state')
     color = fields.Integer(compute='_compute_color', store=True)
     company_id = fields.Many2one(

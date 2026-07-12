@@ -1,3 +1,4 @@
+from . import assetflow_log
 from . import res_company_ext
 from . import asset_category
 from . import asset

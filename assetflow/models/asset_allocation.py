@@ -28,7 +28,7 @@ ACTIVE_STATES = ('approved', 'overdue')
 class AssetflowAssetAllocation(models.Model):
     _name = 'assetflow.asset.allocation'
     _description = 'Asset Allocation / Transfer'
-    _inherit = ['mail.thread', 'mail.activity.mixin']
+    _inherit = ['assetflow.log.mixin']
     _order = 'allocation_date desc, id desc'
 
     name = fields.Char(
@@ -36,26 +36,26 @@ class AssetflowAssetAllocation(models.Model):
         default=lambda self: _('New'))
     asset_id = fields.Many2one(
         'assetflow.asset', string='Asset', required=True,
-        ondelete='restrict', tracking=True,
+        ondelete='restrict',
         domain="[('state', 'not in', ('lost', 'retired', 'disposed')),"
                " ('bookable', '=', False)]")
     employee_id = fields.Many2one(
-        'res.users', string='Assigned To', required=True, tracking=True,
+        'res.users', string='Assigned To', required=True,
         default=lambda self: self.env.user,
         domain="[('share', '=', False)]")
     department_id = fields.Many2one(
         'assetflow.department', string='Department',
         compute='_compute_department_id', store=True, readonly=False,
-        tracking=True,
+        
         help="Defaults to the assignee's department; the department head "
              "approves transfers within it.")
 
     allocation_date = fields.Date(
-        required=True, default=fields.Date.context_today, tracking=True)
+        required=True, default=fields.Date.context_today)
     expected_return_date = fields.Date(
-        tracking=True,
+        
         help="Leave empty for a permanent allocation.")
-    return_date = fields.Date(readonly=True, copy=False, tracking=True)
+    return_date = fields.Date(readonly=True, copy=False)
 
     state = fields.Selection(
         [('draft', 'Draft'),
@@ -63,12 +63,12 @@ class AssetflowAssetAllocation(models.Model):
          ('approved', 'Approved'),
          ('overdue', 'Overdue'),
          ('returned', 'Returned')],
-        default='draft', required=True, tracking=True, index=True,
+        default='draft', required=True, index=True,
         group_expand='_group_expand_state')
 
     # -- transfer specifics ---------------------------------------------
     is_transfer = fields.Boolean(
-        string='Is a Transfer', copy=False, tracking=True,
+        string='Is a Transfer', copy=False,
         help="A transfer takes the asset away from its current holder.")
     previous_allocation_id = fields.Many2one(
         'assetflow.asset.allocation', string='Transferred From',
@@ -285,8 +285,8 @@ class AssetflowAssetAllocation(models.Model):
                 # Offer the transfer path rather than a dead end.
                 allocation._raise_conflict(allocation.asset_id, blocking)
             allocation.state = 'requested'
-            allocation.message_post(
-                body=_("Allocation requested by %s.", self.env.user.name))
+            allocation._log(
+                _("Allocation requested by %s.", self.env.user.name), 'allocation')
         return True
 
     def _check_approver_rights(self):
@@ -334,10 +334,10 @@ class AssetflowAssetAllocation(models.Model):
             asset._set_state('allocated', _(
                 "allocated to %s (%s)",
                 allocation.employee_id.name, allocation.name))
-            allocation.message_post(body=_(
+            allocation._log(_(
                 "Approved by %(approver)s — asset handed over to %(holder)s.",
                 approver=self.env.user.name,
-                holder=allocation.employee_id.name))
+                holder=allocation.employee_id.name), 'allocation')
         return True
 
     def _close_previous_allocation(self):
@@ -350,9 +350,9 @@ class AssetflowAssetAllocation(models.Model):
             'state': 'returned',
             'return_date': fields.Date.context_today(self),
         })
-        previous.message_post(body=_(
+        previous._log(_(
             "Closed automatically: asset transferred to %s (%s).",
-            self.employee_id.name, self.name))
+            self.employee_id.name, self.name), 'allocation')
 
     def action_return(self):
         for allocation in self:
@@ -368,8 +368,8 @@ class AssetflowAssetAllocation(models.Model):
             if asset.state == 'allocated':
                 asset._set_state('available', _(
                     "returned by %s", allocation.employee_id.name))
-            allocation.message_post(body=_(
-                "Returned by %s.", allocation.employee_id.name))
+            allocation._log(_(
+                "Returned by %s.", allocation.employee_id.name), 'allocation')
         return True
 
     def action_reset_to_draft(self):
@@ -378,8 +378,8 @@ class AssetflowAssetAllocation(models.Model):
                 raise UserError(_(
                     "Only a requested allocation can be sent back to draft."))
             allocation.write({'state': 'draft'})
-            allocation.message_post(
-                body=_("Request refused by %s.", self.env.user.name))
+            allocation._log(
+                _("Request refused by %s.", self.env.user.name), 'allocation')
         return True
 
     def action_open_asset(self):
@@ -406,8 +406,7 @@ class AssetflowAssetAllocation(models.Model):
         ])
         for allocation in overdue:
             allocation.state = 'overdue'
-            allocation.message_post(
-                body=_("This allocation is overdue since %s.",
-                       allocation.expected_return_date),
-                partner_ids=allocation.employee_id.partner_id.ids)
+            allocation._log(
+                _("This allocation is overdue since %s.",
+                  allocation.expected_return_date), 'allocation')
         return True

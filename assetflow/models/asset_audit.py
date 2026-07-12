@@ -21,25 +21,25 @@ from odoo.exceptions import UserError, ValidationError
 class AssetflowAuditCycle(models.Model):
     _name = 'assetflow.audit.cycle'
     _description = 'Asset Audit Cycle'
-    _inherit = ['mail.thread', 'mail.activity.mixin']
+    _inherit = ['assetflow.log.mixin']
     _order = 'date_start desc, id desc'
 
-    name = fields.Char(required=True, tracking=True)
+    name = fields.Char(required=True)
     reference = fields.Char(
         readonly=True, copy=False, default=lambda self: _('New'))
     scope = fields.Selection(
         [('department', 'Department'), ('location', 'Location')],
-        default='department', required=True, tracking=True)
+        default='department', required=True)
     department_id = fields.Many2one(
-        'assetflow.department', string='Target Department', tracking=True)
-    location = fields.Char(string='Target Location', tracking=True)
+        'assetflow.department', string='Target Department')
+    location = fields.Char(string='Target Location')
     include_sub_departments = fields.Boolean(
         default=True,
         help="Also audit the assets held by sub-departments of the target.")
 
     date_start = fields.Date(
-        required=True, default=fields.Date.context_today, tracking=True)
-    date_end = fields.Date(required=True, tracking=True)
+        required=True, default=fields.Date.context_today)
+    date_end = fields.Date(required=True)
     auditor_ids = fields.Many2many(
         'res.users', 'assetflow_audit_auditor_rel', 'cycle_id', 'user_id',
         string='Auditors', required=True, domain="[('share', '=', False)]",
@@ -50,7 +50,7 @@ class AssetflowAuditCycle(models.Model):
          ('open', 'In Progress'),
          ('discrepancy_found', 'Discrepancies Found'),
          ('closed', 'Closed')],
-        default='draft', required=True, tracking=True, index=True,
+        default='draft', required=True, index=True,
         group_expand='_group_expand_state')
 
     line_ids = fields.One2many(
@@ -185,9 +185,9 @@ class AssetflowAuditCycle(models.Model):
                 {'cycle_id': cycle.id, 'asset_id': asset.id}
                 for asset in new_assets
             ])
-            cycle.message_post(body=_(
+            cycle._log(_(
                 "Scope refreshed: %(total)s asset(s) in scope, %(new)s newly "
-                "added.", total=len(assets), new=len(new_assets)))
+                "added.", total=len(assets), new=len(new_assets)), 'audit')
         return True
 
     # ------------------------------------------------------------------
@@ -203,17 +203,8 @@ class AssetflowAuditCycle(models.Model):
                     "No asset matches the scope of '%s'. Widen the scope "
                     "before starting the audit.", cycle.name))
             cycle.state = 'open'
-            cycle.message_post(
-                body=_("Audit started — %s asset(s) to check.",
-                       len(cycle.line_ids)),
-                partner_ids=cycle.auditor_ids.partner_id.ids)
-            # Give each auditor a to-do on the cycle itself.
-            for auditor in cycle.auditor_ids:
-                cycle.activity_schedule(
-                    'mail.mail_activity_data_todo',
-                    date_deadline=cycle.date_end,
-                    summary=_('Audit assets — %s', cycle.name),
-                    user_id=auditor.id)
+            cycle._log(_("Audit started — %s asset(s) to check.",
+                         len(cycle.line_ids)), 'audit')
         return True
 
     def _refresh_discrepancy_state(self):
@@ -265,13 +256,12 @@ class AssetflowAuditCycle(models.Model):
                     })
 
             cycle.write({'state': 'closed'})
-            cycle.activity_unlink(['mail.mail_activity_data_todo'])
-            cycle.message_post(body=_(
+            cycle._log(_(
                 "Audit closed — %(verified)s verified, %(missing)s missing "
                 "(flagged as lost), %(damaged)s damaged (maintenance opened).",
                 verified=cycle.verified_count,
                 missing=cycle.missing_count,
-                damaged=cycle.damaged_count))
+                damaged=cycle.damaged_count), 'audit')
         return True
 
     def action_reset_to_draft(self):

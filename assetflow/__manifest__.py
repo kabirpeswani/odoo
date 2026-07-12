@@ -27,7 +27,7 @@ No accounting, purchase or invoicing dependencies.
     'category': 'Operations/Asset Management',
     'version': '17.0.1.0.0',
     'license': 'LGPL-3',
-    'depends': ['base', 'mail'],
+    'depends': ['base'],
     'data': [
         # Security must load before anything referencing the groups.
         'security/assetflow_security.xml',
@@ -36,9 +36,17 @@ No accounting, purchase or invoicing dependencies.
         # Sequences, crons, demo-free master data.
         'data/assetflow_data.xml',
 
+        # Hide built-in app menus so the UI shows only AssetFlow.
+        'views/assetflow_hide_apps.xml',
+
         # Views, actions and menus.
         'views/assetflow_menus_views.xml',
     ],
+    'assets': {
+        'web.assets_backend': [
+            'assetflow/static/src/css/assetflow.css',
+        ],
+    },
     'application': True,
     'installable': True,
     'auto_install': False,
