@@ -41,6 +41,8 @@ No accounting, purchase or invoicing dependencies.
 
         # Views, actions and menus.
         'views/assetflow_menus_views.xml',
+        'views/assetflow_reports_views.xml',
+        'views/assetflow_activity_views.xml',
     ],
     'assets': {
         'web.assets_backend': [

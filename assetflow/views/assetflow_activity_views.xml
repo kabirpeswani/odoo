@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ================================================================== -->
+    <!--  SCREEN 10 — ACTIVITY LOGS & NOTIFICATIONS                         -->
+    <!--                                                                    -->
+    <!--  Every AssetFlow model already logs its events to the chatter      -->
+    <!--  (mail.thread) and notifies the right people. These views simply   -->
+    <!--  gather those messages into a single, filterable feed:             -->
+    <!--    * My Notifications — what was sent to the current user          -->
+    <!--    * Activity Log      — the full "who did what, when" audit trail -->
+    <!-- ================================================================== -->
+
+    <record id="view_assetflow_message_tree" model="ir.ui.view">
+        <field name="name">assetflow.mail.message.tree</field>
+        <field name="model">mail.message</field>
+        <field name="arch" type="xml">
+            <tree string="Activity" create="false" edit="false"
+                  decoration-info="message_type == 'notification'">
+                <field name="date"/>
+                <field name="author_id" string="By"/>
+                <field name="model" string="Type" optional="show"/>
+                <field name="record_name" string="Record"/>
+                <field name="subject" optional="hide"/>
+                <field name="body" string="Activity"/>
+                <field name="subtype_id" optional="hide"/>
+                <field name="message_type" optional="hide"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_assetflow_message_form" model="ir.ui.view">
+        <field name="name">assetflow.mail.message.form</field>
+        <field name="model">mail.message</field>
+        <field name="arch" type="xml">
+            <form string="Activity" create="false" edit="false">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="author_id" string="By"/>
+                            <field name="date"/>
+                            <field name="message_type"/>
+                        </group>
+                        <group>
+                            <field name="model" string="Record Type"/>
+                            <field name="record_name" string="Record"/>
+                            <field name="subtype_id"/>
+                        </group>
+                    </group>
+                    <field name="subject" invisible="not subject"/>
+                    <field name="body" widget="html" readonly="1"/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_assetflow_message_search" model="ir.ui.view">
+        <field name="name">assetflow.mail.message.search</field>
+        <field name="model">mail.message</field>
+        <field name="arch" type="xml">
+            <search string="Activity">
+                <field name="record_name" string="Record"/>
+                <field name="author_id" string="Author"/>
+                <field name="subject"/>
+                <field name="body"/>
+                <filter name="filter_mine" string="By Me"
+                        domain="[('author_id.user_ids', 'in', [uid])]"/>
+                <filter name="filter_notifications" string="System Notifications"
+                        domain="[('message_type', '=', 'notification')]"/>
+                <separator/>
+                <filter name="filter_assets" string="Assets"
+                        domain="[('model', '=', 'assetflow.asset')]"/>
+                <filter name="filter_allocations" string="Allocations &amp; Transfers"
+                        domain="[('model', '=', 'assetflow.asset.allocation')]"/>
+                <filter name="filter_bookings" string="Bookings"
+                        domain="[('model', '=', 'assetflow.resource.booking')]"/>
+                <filter name="filter_maintenance" string="Maintenance"
+                        domain="[('model', '=', 'assetflow.maintenance')]"/>
+                <filter name="filter_audits" string="Audits"
+                        domain="[('model', 'in', ('assetflow.audit.cycle', 'assetflow.audit.line'))]"/>
+                <group expand="0" string="Group By">
+                    <filter name="group_model" string="Record Type"
+                            context="{'group_by': 'model'}"/>
+                    <filter name="group_author" string="Author"
+                            context="{'group_by': 'author_id'}"/>
+                    <filter name="group_date" string="Date"
+                            context="{'group_by': 'date:day'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- What was notified to the current user, across every AssetFlow model. -->
+    <record id="action_assetflow_my_notifications" model="ir.actions.act_window">
+        <field name="name">My Notifications</field>
+        <field name="res_model">mail.message</field>
+        <field name="view_mode">tree,form</field>
+        <field name="view_ids" eval="[(5, 0, 0),
+            (0, 0, {'view_mode': 'tree', 'view_id': ref('view_assetflow_message_tree')}),
+            (0, 0, {'view_mode': 'form', 'view_id': ref('view_assetflow_message_form')})]"/>
+        <field name="search_view_id" ref="view_assetflow_message_search"/>
+        <field name="domain">[('model', 'like', 'assetflow.%'),
+                              ('notification_ids.res_partner_id.user_ids', 'in', [uid])]</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">You're all caught up</p>
+            <p>Asset assignments, approvals, booking confirmations, overdue
+               alerts and audit flags addressed to you show up here.</p>
+        </field>
+    </record>
+
+    <!-- The full audit trail: every logged AssetFlow event. Managers see the
+         whole organisation; everyone else is scoped by the standard message
+         access rules to the records they may read. -->
+    <record id="action_assetflow_activity_log" model="ir.actions.act_window">
+        <field name="name">Activity Log</field>
+        <field name="res_model">mail.message</field>
+        <field name="view_mode">tree,form</field>
+        <field name="view_ids" eval="[(5, 0, 0),
+            (0, 0, {'view_mode': 'tree', 'view_id': ref('view_assetflow_message_tree')}),
+            (0, 0, {'view_mode': 'form', 'view_id': ref('view_assetflow_message_form')})]"/>
+        <field name="search_view_id" ref="view_assetflow_message_search"/>
+        <field name="domain">[('model', 'like', 'assetflow.%')]</field>
+        <field name="context">{'search_default_group_model': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No activity recorded yet</p>
+            <p>A chronological record of who did what across AssetFlow —
+               allocations, transfers, maintenance, bookings and audits.</p>
+        </field>
+    </record>
+
+    <!-- ================================================================== -->
+    <!--  ACTIVITY MENU                                                     -->
+    <!-- ================================================================== -->
+    <menuitem id="menu_assetflow_activity"
+              name="Activity"
+              parent="menu_assetflow_root"
+              sequence="40"/>
+
+    <menuitem id="menu_assetflow_my_notifications"
+              name="My Notifications"
+              parent="menu_assetflow_activity"
+              action="action_assetflow_my_notifications"
+              sequence="10"/>
+
+    <menuitem id="menu_assetflow_activity_log"
+              name="Activity Log"
+              parent="menu_assetflow_activity"
+              action="action_assetflow_activity_log"
+              sequence="20"
+              groups="assetflow.group_assetflow_manager"/>
+
+</odoo>
