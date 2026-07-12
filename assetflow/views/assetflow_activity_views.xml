@@ -3,123 +3,121 @@
     <!-- ================================================================== -->
     <!--  SCREEN 10 — ACTIVITY LOGS & NOTIFICATIONS                         -->
     <!--                                                                    -->
-    <!--  Every AssetFlow model already logs its events to the chatter      -->
-    <!--  (mail.thread) and notifies the right people. These views simply   -->
-    <!--  gather those messages into a single, filterable feed:             -->
-    <!--    * My Notifications — what was sent to the current user          -->
-    <!--    * Activity Log      — the full "who did what, when" audit trail -->
+    <!--  Every AssetFlow model logs its events to assetflow.log via the    -->
+    <!--  _log() mixin. These views gather those lines into one feed:       -->
+    <!--    * My Notifications — activity that concerns the current user    -->
+    <!--    * Activity Log     — the full "who did what, when" audit trail  -->
     <!-- ================================================================== -->
 
-    <record id="view_assetflow_message_tree" model="ir.ui.view">
-        <field name="name">assetflow.mail.message.tree</field>
-        <field name="model">mail.message</field>
+    <record id="view_assetflow_log_tree" model="ir.ui.view">
+        <field name="name">assetflow.log.tree</field>
+        <field name="model">assetflow.log</field>
         <field name="arch" type="xml">
-            <tree string="Activity" create="false" edit="false"
-                  decoration-info="message_type == 'notification'">
-                <field name="date"/>
-                <field name="author_id" string="By"/>
-                <field name="model" string="Type" optional="show"/>
-                <field name="record_name" string="Record"/>
-                <field name="subject" optional="hide"/>
+            <tree string="Activity" create="false" edit="false" delete="false"
+                  decoration-warning="log_type == 'audit'"
+                  decoration-muted="log_type == 'system'">
+                <field name="create_date" string="When"/>
                 <field name="body" string="Activity"/>
-                <field name="subtype_id" optional="hide"/>
-                <field name="message_type" optional="hide"/>
+                <field name="res_name" string="Record"/>
+                <field name="log_type" string="Type"/>
+                <field name="author_id" string="By"/>
+                <field name="user_id" string="Concerns" optional="show"/>
+                <field name="res_model" optional="hide"/>
             </tree>
         </field>
     </record>
 
-    <record id="view_assetflow_message_form" model="ir.ui.view">
-        <field name="name">assetflow.mail.message.form</field>
-        <field name="model">mail.message</field>
+    <record id="view_assetflow_log_form" model="ir.ui.view">
+        <field name="name">assetflow.log.form</field>
+        <field name="model">assetflow.log</field>
         <field name="arch" type="xml">
             <form string="Activity" create="false" edit="false">
                 <sheet>
                     <group>
                         <group>
                             <field name="author_id" string="By"/>
-                            <field name="date"/>
-                            <field name="message_type"/>
+                            <field name="create_date" string="When"/>
+                            <field name="log_type"/>
                         </group>
                         <group>
-                            <field name="model" string="Record Type"/>
-                            <field name="record_name" string="Record"/>
-                            <field name="subtype_id"/>
+                            <field name="res_name" string="Record"/>
+                            <field name="res_model" string="Record Type"/>
+                            <field name="user_id" string="Concerns"/>
                         </group>
                     </group>
-                    <field name="subject" invisible="not subject"/>
-                    <field name="body" widget="html" readonly="1"/>
+                    <field name="body" readonly="1"/>
                 </sheet>
             </form>
         </field>
     </record>
 
-    <record id="view_assetflow_message_search" model="ir.ui.view">
-        <field name="name">assetflow.mail.message.search</field>
-        <field name="model">mail.message</field>
+    <record id="view_assetflow_log_search" model="ir.ui.view">
+        <field name="name">assetflow.log.search</field>
+        <field name="model">assetflow.log</field>
         <field name="arch" type="xml">
             <search string="Activity">
-                <field name="record_name" string="Record"/>
+                <field name="body" string="Activity"/>
+                <field name="res_name" string="Record"/>
                 <field name="author_id" string="Author"/>
-                <field name="subject"/>
-                <field name="body"/>
-                <filter name="filter_mine" string="By Me"
-                        domain="[('author_id.user_ids', 'in', [uid])]"/>
-                <filter name="filter_notifications" string="System Notifications"
-                        domain="[('message_type', '=', 'notification')]"/>
-                <separator/>
-                <filter name="filter_assets" string="Assets"
-                        domain="[('model', '=', 'assetflow.asset')]"/>
-                <filter name="filter_allocations" string="Allocations &amp; Transfers"
-                        domain="[('model', '=', 'assetflow.asset.allocation')]"/>
+                <field name="user_id" string="Concerns"/>
+
+                <!-- The mockup's filter tabs: All / Alerts / Approvals / Bookings -->
+                <filter name="filter_alerts" string="Alerts"
+                        domain="[('log_type', '=', 'audit')]"/>
+                <filter name="filter_approvals" string="Approvals"
+                        domain="[('log_type', 'in', ('allocation', 'maintenance'))]"/>
                 <filter name="filter_bookings" string="Bookings"
-                        domain="[('model', '=', 'assetflow.resource.booking')]"/>
-                <filter name="filter_maintenance" string="Maintenance"
-                        domain="[('model', '=', 'assetflow.maintenance')]"/>
-                <filter name="filter_audits" string="Audits"
-                        domain="[('model', 'in', ('assetflow.audit.cycle', 'assetflow.audit.line'))]"/>
+                        domain="[('log_type', '=', 'booking')]"/>
+                <separator/>
+                <filter name="filter_mine" string="By Me"
+                        domain="[('author_id', '=', uid)]"/>
+                <filter name="filter_concerns_me" string="Concerns Me"
+                        domain="[('user_id', '=', uid)]"/>
+                <separator/>
+                <filter name="filter_today" string="Today"
+                        domain="[('create_date', '>=', datetime.datetime.combine(context_today(), datetime.time(0,0,0)))]"/>
+
                 <group expand="0" string="Group By">
+                    <filter name="group_type" string="Type"
+                            context="{'group_by': 'log_type'}"/>
                     <filter name="group_model" string="Record Type"
-                            context="{'group_by': 'model'}"/>
+                            context="{'group_by': 'res_model'}"/>
                     <filter name="group_author" string="Author"
                             context="{'group_by': 'author_id'}"/>
                     <filter name="group_date" string="Date"
-                            context="{'group_by': 'date:day'}"/>
+                            context="{'group_by': 'create_date:day'}"/>
                 </group>
             </search>
         </field>
     </record>
 
-    <!-- What was notified to the current user, across every AssetFlow model. -->
+    <!-- Activity addressed to the current user. -->
     <record id="action_assetflow_my_notifications" model="ir.actions.act_window">
         <field name="name">My Notifications</field>
-        <field name="res_model">mail.message</field>
+        <field name="res_model">assetflow.log</field>
         <field name="view_mode">tree,form</field>
         <field name="view_ids" eval="[(5, 0, 0),
-            (0, 0, {'view_mode': 'tree', 'view_id': ref('view_assetflow_message_tree')}),
-            (0, 0, {'view_mode': 'form', 'view_id': ref('view_assetflow_message_form')})]"/>
-        <field name="search_view_id" ref="view_assetflow_message_search"/>
-        <field name="domain">[('model', 'like', 'assetflow.%'),
-                              ('notification_ids.res_partner_id.user_ids', 'in', [uid])]</field>
+            (0, 0, {'view_mode': 'tree', 'view_id': ref('view_assetflow_log_tree')}),
+            (0, 0, {'view_mode': 'form', 'view_id': ref('view_assetflow_log_form')})]"/>
+        <field name="search_view_id" ref="view_assetflow_log_search"/>
+        <field name="domain">[('user_id', '=', uid)]</field>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">You're all caught up</p>
             <p>Asset assignments, approvals, booking confirmations, overdue
-               alerts and audit flags addressed to you show up here.</p>
+               alerts and audit flags that concern you show up here.</p>
         </field>
     </record>
 
-    <!-- The full audit trail: every logged AssetFlow event. Managers see the
-         whole organisation; everyone else is scoped by the standard message
-         access rules to the records they may read. -->
+    <!-- The full audit trail: every logged AssetFlow event, managers only. -->
     <record id="action_assetflow_activity_log" model="ir.actions.act_window">
         <field name="name">Activity Log</field>
-        <field name="res_model">mail.message</field>
+        <field name="res_model">assetflow.log</field>
         <field name="view_mode">tree,form</field>
         <field name="view_ids" eval="[(5, 0, 0),
-            (0, 0, {'view_mode': 'tree', 'view_id': ref('view_assetflow_message_tree')}),
-            (0, 0, {'view_mode': 'form', 'view_id': ref('view_assetflow_message_form')})]"/>
-        <field name="search_view_id" ref="view_assetflow_message_search"/>
-        <field name="domain">[('model', 'like', 'assetflow.%')]</field>
-        <field name="context">{'search_default_group_model': 1}</field>
+            (0, 0, {'view_mode': 'tree', 'view_id': ref('view_assetflow_log_tree')}),
+            (0, 0, {'view_mode': 'form', 'view_id': ref('view_assetflow_log_form')})]"/>
+        <field name="search_view_id" ref="view_assetflow_log_search"/>
+        <field name="context">{'search_default_group_type': 1}</field>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">No activity recorded yet</p>
             <p>A chronological record of who did what across AssetFlow —
