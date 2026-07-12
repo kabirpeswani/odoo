@@ -1,0 +1,7 @@
+from . import res_company_ext
+from . import asset_category
+from . import asset
+from . import asset_allocation
+from . import resource_booking
+from . import asset_maintenance
+from . import asset_audit

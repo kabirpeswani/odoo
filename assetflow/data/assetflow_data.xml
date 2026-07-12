@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!-- ============================================================ -->
+        <!--  Sequences                                                    -->
+        <!-- ============================================================ -->
+        <record id="seq_assetflow_asset" model="ir.sequence">
+            <field name="name">AssetFlow Asset Tag</field>
+            <field name="code">assetflow.asset</field>
+            <field name="prefix">AF-</field>
+            <field name="padding">4</field>
+            <field name="number_next">1</field>
+            <field name="number_increment">1</field>
+            <field name="implementation">standard</field>
+        </record>
+
+        <record id="seq_assetflow_allocation" model="ir.sequence">
+            <field name="name">AssetFlow Allocation</field>
+            <field name="code">assetflow.asset.allocation</field>
+            <field name="prefix">ALLOC/%(year)s/</field>
+            <field name="padding">4</field>
+        </record>
+
+        <record id="seq_assetflow_transfer" model="ir.sequence">
+            <field name="name">AssetFlow Transfer</field>
+            <field name="code">assetflow.asset.transfer</field>
+            <field name="prefix">TRF/%(year)s/</field>
+            <field name="padding">4</field>
+        </record>
+
+        <record id="seq_assetflow_booking" model="ir.sequence">
+            <field name="name">AssetFlow Booking</field>
+            <field name="code">assetflow.resource.booking</field>
+            <field name="prefix">BKG/%(year)s/</field>
+            <field name="padding">4</field>
+        </record>
+
+        <record id="seq_assetflow_maintenance" model="ir.sequence">
+            <field name="name">AssetFlow Maintenance</field>
+            <field name="code">assetflow.maintenance</field>
+            <field name="prefix">MNT/%(year)s/</field>
+            <field name="padding">4</field>
+        </record>
+
+        <record id="seq_assetflow_audit" model="ir.sequence">
+            <field name="name">AssetFlow Audit Cycle</field>
+            <field name="code">assetflow.audit.cycle</field>
+            <field name="prefix">AUD/%(year)s/</field>
+            <field name="padding">3</field>
+        </record>
+
+        <!-- ============================================================ -->
+        <!--  Scheduled actions                                            -->
+        <!-- ============================================================ -->
+        <record id="cron_flag_overdue_allocations" model="ir.cron">
+            <field name="name">AssetFlow: flag overdue allocations</field>
+            <field name="model_id" ref="model_assetflow_asset_allocation"/>
+            <field name="state">code</field>
+            <field name="code">model._cron_flag_overdue()</field>
+            <field name="interval_number">1</field>
+            <field name="interval_type">days</field>
+            <field name="numbercall">-1</field>
+            <field name="active" eval="True"/>
+        </record>
+
+        <record id="cron_update_booking_states" model="ir.cron">
+            <field name="name">AssetFlow: roll booking states</field>
+            <field name="model_id" ref="model_assetflow_resource_booking"/>
+            <field name="state">code</field>
+            <field name="code">model._cron_update_booking_states()</field>
+            <field name="interval_number">15</field>
+            <field name="interval_type">minutes</field>
+            <field name="numbercall">-1</field>
+            <field name="active" eval="True"/>
+        </record>
+
+    </data>
+</odoo>

@@ -1,0 +1,1572 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ================================================================== -->
+    <!--  ASSET CATEGORY                                                     -->
+    <!-- ================================================================== -->
+    <record id="view_asset_category_tree" model="ir.ui.view">
+        <field name="name">assetflow.asset.category.tree</field>
+        <field name="model">assetflow.asset.category</field>
+        <field name="arch" type="xml">
+            <tree string="Asset Categories">
+                <field name="name"/>
+                <field name="code" optional="show"/>
+                <field name="warranty_required"/>
+                <field name="warranty_period" string="Warranty (Months)"/>
+                <field name="bookable_by_default" optional="hide"/>
+                <field name="asset_count" string="Assets"/>
+                <field name="company_id" groups="base.group_multi_company" optional="hide"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_asset_category_form" model="ir.ui.view">
+        <field name="name">assetflow.asset.category.form</field>
+        <field name="model">assetflow.asset.category</field>
+        <field name="arch" type="xml">
+            <form string="Asset Category">
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_assets" type="object"
+                                class="oe_stat_button" icon="fa-cubes">
+                            <field name="asset_count" widget="statinfo" string="Assets"/>
+                        </button>
+                    </div>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger"
+                            invisible="active"/>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="e.g. Electronics"/></h1>
+                    </div>
+                    <group>
+                        <group string="Identification">
+                            <field name="code" placeholder="e.g. ELEC"/>
+                            <field name="color" widget="color_picker"/>
+                            <field name="active" invisible="1"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                        <group string="Policy">
+                            <field name="warranty_required"/>
+                            <!-- Conditional field: only meaningful with a warranty. -->
+                            <field name="warranty_period"
+                                   string="Warranty Period (Months)"
+                                   invisible="not warranty_required"
+                                   required="warranty_required"/>
+                            <field name="bookable_by_default"/>
+                            <field name="depreciation_years"/>
+                        </group>
+                    </group>
+                    <group string="Description">
+                        <field name="description" nolabel="1" placeholder="What belongs in this category…"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_asset_category" model="ir.actions.act_window">
+        <field name="name">Asset Categories</field>
+        <field name="res_model">assetflow.asset.category</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Create your first asset category</p>
+            <p>Categories carry the policy an asset inherits — for instance
+               <b>Electronics</b> with a mandatory 24-month warranty.</p>
+        </field>
+    </record>
+
+    <!-- ================================================================== -->
+    <!--  DEPARTMENT                                                         -->
+    <!-- ================================================================== -->
+    <record id="view_department_tree" model="ir.ui.view">
+        <field name="name">assetflow.department.tree</field>
+        <field name="model">assetflow.department</field>
+        <field name="arch" type="xml">
+            <tree string="Departments" decoration-muted="state == 'inactive'">
+                <field name="complete_name" string="Department"/>
+                <field name="code" optional="show"/>
+                <field name="manager_id"/>
+                <field name="parent_id" optional="hide"/>
+                <field name="member_count" string="Members"/>
+                <field name="asset_count" string="Assets Held"/>
+                <field name="state" widget="badge"
+                       decoration-success="state == 'active'"
+                       decoration-danger="state == 'inactive'"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_department_form" model="ir.ui.view">
+        <field name="name">assetflow.department.form</field>
+        <field name="model">assetflow.department</field>
+        <field name="arch" type="xml">
+            <form string="Department">
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_members" type="object"
+                                class="oe_stat_button" icon="fa-users">
+                            <field name="member_count" widget="statinfo" string="Members"/>
+                        </button>
+                        <button name="action_view_allocated_assets" type="object"
+                                class="oe_stat_button" icon="fa-cubes">
+                            <field name="asset_count" widget="statinfo" string="Assets"/>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="e.g. Engineering"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="code"/>
+                            <field name="manager_id" widget="many2one_avatar_user"/>
+                            <field name="parent_id"/>
+                        </group>
+                        <group>
+                            <field name="state" widget="radio" options="{'horizontal': True}"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Members" name="members">
+                            <field name="member_ids" readonly="1">
+                                <tree>
+                                    <field name="name"/>
+                                    <field name="login" string="Email"/>
+                                    <field name="job_title"/>
+                                    <field name="assetflow_role"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="Sub-Departments" name="children">
+                            <field name="child_ids" readonly="1">
+                                <tree>
+                                    <field name="name"/>
+                                    <field name="manager_id"/>
+                                    <field name="state"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_department" model="ir.actions.act_window">
+        <field name="name">Departments</field>
+        <field name="res_model">assetflow.department</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Set up your first department</p>
+            <p>Departments drive who sees what: a Department Head sees every
+               allocation of the department they run.</p>
+        </field>
+    </record>
+
+    <!-- ================================================================== -->
+    <!--  EMPLOYEE DIRECTORY (res.users projection)                          -->
+    <!-- ================================================================== -->
+    <record id="view_users_form_assetflow" model="ir.ui.view">
+        <field name="name">res.users.form.assetflow</field>
+        <field name="model">res.users</field>
+        <field name="inherit_id" ref="base.view_users_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_view_my_allocations" type="object"
+                        class="oe_stat_button" icon="fa-cubes"
+                        groups="assetflow.group_assetflow_employee">
+                    <field name="allocated_asset_count" widget="statinfo" string="Assets"/>
+                </button>
+                <button name="action_view_my_bookings" type="object"
+                        class="oe_stat_button" icon="fa-calendar"
+                        groups="assetflow.group_assetflow_employee">
+                    <field name="booking_count" widget="statinfo" string="Bookings"/>
+                </button>
+            </xpath>
+            <xpath expr="//notebook" position="inside">
+                <page string="AssetFlow" name="assetflow">
+                    <group>
+                        <group string="Directory">
+                            <field name="department_id"/>
+                            <field name="job_title"/>
+                        </group>
+                        <group string="Role">
+                            <!-- Only an AssetFlow Administrator may hand out
+                                 roles; everybody else sees it read-only. The
+                                 server-side guard lives in res.users.write. -->
+                            <field name="assetflow_role"
+                                   groups="assetflow.group_assetflow_admin"/>
+                            <field name="assetflow_role" readonly="1"
+                                   groups="!assetflow.group_assetflow_admin"/>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_users_tree_assetflow" model="ir.ui.view">
+        <field name="name">res.users.tree.assetflow</field>
+        <field name="model">res.users</field>
+        <field name="arch" type="xml">
+            <tree string="Employee Directory">
+                <field name="name"/>
+                <field name="login" string="Email"/>
+                <field name="department_id"/>
+                <field name="job_title" optional="show"/>
+                <field name="assetflow_role" widget="badge"/>
+                <field name="allocated_asset_count" string="Assets Held"/>
+                <field name="active" widget="boolean_toggle" string="Status"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_users_search_assetflow" model="ir.ui.view">
+        <field name="name">res.users.search.assetflow</field>
+        <field name="model">res.users</field>
+        <field name="arch" type="xml">
+            <search string="Employees">
+                <field name="name" filter_domain="['|', ('name', 'ilike', self), ('login', 'ilike', self)]"
+                       string="Name or Email"/>
+                <field name="department_id"/>
+                <filter name="filter_active" string="Active" domain="[('active', '=', True)]"/>
+                <filter name="filter_inactive" string="Archived" domain="[('active', '=', False)]"/>
+                <separator/>
+                <filter name="filter_holders" string="Holding Assets"
+                        domain="[('allocation_ids.state', 'in', ('approved', 'overdue'))]"/>
+                <group expand="0" string="Group By">
+                    <filter name="group_department" string="Department"
+                            context="{'group_by': 'department_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_employee_directory" model="ir.actions.act_window">
+        <field name="name">Employee Directory</field>
+        <field name="res_model">res.users</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="view_users_search_assetflow"/>
+        <field name="context">{'tree_view_ref': 'assetflow.view_users_tree_assetflow'}</field>
+    </record>
+
+    <!-- ================================================================== -->
+    <!--  ASSET                                                              -->
+    <!-- ================================================================== -->
+    <record id="view_asset_kanban" model="ir.ui.view">
+        <field name="name">assetflow.asset.kanban</field>
+        <field name="model">assetflow.asset</field>
+        <field name="arch" type="xml">
+            <!-- Colour-coded by lifecycle state via the stored `color` field
+                 (see STATE_COLORS in models/asset.py). -->
+            <kanban default_group_by="state" sample="1" quick_create="false">
+                <field name="color"/>
+                <field name="state"/>
+                <field name="current_holder_id"/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div t-attf-class="oe_kanban_global_click oe_kanban_card #{kanban_color(record.color.raw_value)}">
+                            <div class="o_kanban_record_top mb-2">
+                                <div class="o_kanban_record_headings">
+                                    <strong class="o_kanban_record_title">
+                                        <field name="name"/>
+                                    </strong>
+                                    <small class="o_kanban_record_subtitle text-muted">
+                                        <field name="asset_tag"/>
+                                        <span t-if="record.serial_number.raw_value">
+                                            · SN <field name="serial_number"/>
+                                        </span>
+                                    </small>
+                                </div>
+                                <field name="category_id" widget="label_selection"
+                                       invisible="1"/>
+                            </div>
+                            <div class="o_kanban_record_body">
+                                <div>
+                                    <i class="fa fa-tags me-1" title="Category"/>
+                                    <field name="category_id"/>
+                                </div>
+                                <div t-if="record.location.raw_value">
+                                    <i class="fa fa-map-marker me-1" title="Location"/>
+                                    <field name="location"/>
+                                </div>
+                                <div t-if="record.current_holder_id.raw_value">
+                                    <i class="fa fa-user me-1" title="Held by"/>
+                                    <field name="current_holder_id"/>
+                                </div>
+                            </div>
+                            <div class="o_kanban_record_bottom mt-2">
+                                <div class="oe_kanban_bottom_left">
+                                    <field name="state" widget="label_selection"
+                                           options="{'classes': {
+                                                'available': 'success',
+                                                'allocated': 'primary',
+                                                'reserved': 'warning',
+                                                'maintenance': 'warning',
+                                                'lost': 'danger',
+                                                'retired': 'secondary',
+                                                'disposed': 'danger'}}"/>
+                                    <span class="badge text-bg-info ms-1"
+                                          t-if="record.bookable.raw_value">Shared</span>
+                                </div>
+                                <div class="oe_kanban_bottom_right">
+                                    <field name="condition" widget="label_selection"
+                                           options="{'classes': {
+                                                'new': 'success',
+                                                'good': 'info',
+                                                'fair': 'warning',
+                                                'damaged': 'danger'}}"/>
+                                </div>
+                            </div>
+                            <field name="bookable" invisible="1"/>
+                            <field name="location" invisible="1"/>
+                            <field name="serial_number" invisible="1"/>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="view_asset_tree" model="ir.ui.view">
+        <field name="name">assetflow.asset.tree</field>
+        <field name="model">assetflow.asset</field>
+        <field name="arch" type="xml">
+            <tree string="Assets"
+                  decoration-success="state == 'available'"
+                  decoration-info="state == 'allocated'"
+                  decoration-warning="state in ('reserved', 'maintenance')"
+                  decoration-danger="state in ('lost', 'disposed')"
+                  decoration-muted="state == 'retired'">
+                <field name="asset_tag"/>
+                <field name="name"/>
+                <field name="category_id"/>
+                <field name="serial_number" optional="show"/>
+                <field name="location" optional="show"/>
+                <field name="current_holder_id" string="Held By" optional="show"/>
+                <field name="condition" widget="badge"
+                       decoration-success="condition in ('new', 'good')"
+                       decoration-warning="condition == 'fair'"
+                       decoration-danger="condition == 'damaged'"/>
+                <field name="bookable" optional="hide"/>
+                <field name="acquisition_date" optional="hide"/>
+                <field name="warranty_expiry_date" optional="hide"/>
+                <field name="acquisition_cost" sum="Total Value" optional="show"/>
+                <field name="currency_id" column_invisible="1"/>
+                <field name="state" widget="badge"
+                       decoration-success="state == 'available'"
+                       decoration-info="state == 'allocated'"
+                       decoration-warning="state in ('reserved', 'maintenance')"
+                       decoration-danger="state in ('lost', 'disposed')"/>
+                <field name="company_id" groups="base.group_multi_company" optional="hide"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_asset_form" model="ir.ui.view">
+        <field name="name">assetflow.asset.form</field>
+        <field name="model">assetflow.asset</field>
+        <field name="arch" type="xml">
+            <form string="Asset">
+                <header>
+                    <button name="action_allocate" type="object" string="Allocate"
+                            class="btn-primary"
+                            invisible="state != 'available'"
+                            groups="assetflow.group_assetflow_manager"/>
+                    <!-- The functional way out of an allocation conflict. -->
+                    <button name="action_request_transfer" type="object"
+                            string="Request Transfer" class="btn-primary"
+                            invisible="state != 'allocated'"/>
+                    <button name="action_book" type="object" string="Book"
+                            invisible="not bookable or state in ('lost', 'retired', 'disposed')"/>
+                    <button name="action_report_issue" type="object"
+                            string="Report Issue"
+                            invisible="state in ('maintenance', 'lost', 'retired', 'disposed')"/>
+                    <button name="action_set_available" type="object"
+                            string="Set Available"
+                            invisible="state in ('available', 'allocated')"
+                            groups="assetflow.group_assetflow_manager"/>
+                    <button name="action_mark_lost" type="object" string="Mark Lost"
+                            invisible="state in ('lost', 'retired', 'disposed')"
+                            groups="assetflow.group_assetflow_manager"
+                            confirm="Mark this asset as lost? It will be taken out of circulation."/>
+                    <button name="action_retire" type="object" string="Retire"
+                            invisible="state in ('retired', 'disposed')"
+                            groups="assetflow.group_assetflow_manager"
+                            confirm="Retire this asset from service?"/>
+                    <button name="action_dispose" type="object" string="Dispose"
+                            invisible="state == 'disposed'"
+                            groups="assetflow.group_assetflow_admin"
+                            confirm="Dispose of this asset? It will be archived."/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="available,allocated,reserved,maintenance"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_allocations" type="object"
+                                class="oe_stat_button" icon="fa-exchange">
+                            <field name="allocation_count" widget="statinfo" string="Allocations"/>
+                        </button>
+                        <button name="action_view_maintenance" type="object"
+                                class="oe_stat_button" icon="fa-wrench">
+                            <field name="maintenance_count" widget="statinfo" string="Maintenance"/>
+                        </button>
+                        <button name="action_view_bookings" type="object"
+                                class="oe_stat_button" icon="fa-calendar"
+                                invisible="not bookable">
+                            <field name="booking_count" widget="statinfo" string="Bookings"/>
+                        </button>
+                    </div>
+                    <field name="image" widget="image" class="oe_avatar"/>
+                    <widget name="web_ribbon" title="Disposed" bg_color="text-bg-danger"
+                            invisible="state != 'disposed'"/>
+                    <widget name="web_ribbon" title="Lost" bg_color="text-bg-danger"
+                            invisible="state != 'lost'"/>
+
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="e.g. Dell Latitude 5540"/></h1>
+                        <h2><field name="asset_tag" class="text-muted"/></h2>
+                    </div>
+
+                    <div class="alert alert-info" role="alert"
+                         invisible="not current_holder_id">
+                        Currently held by <field name="current_holder_id" class="oe_inline" readonly="1"/>
+                        <span invisible="not current_department_id">
+                            (<field name="current_department_id" class="oe_inline" readonly="1"/>)
+                        </span>.
+                    </div>
+
+                    <group>
+                        <group string="Identification">
+                            <field name="category_id"/>
+                            <field name="serial_number"/>
+                            <field name="location" placeholder="e.g. HQ / Floor 2"/>
+                            <field name="bookable"
+                                   help="Shared resources are booked on the calendar rather than allocated."/>
+                            <field name="active" invisible="1"/>
+                        </group>
+                        <group string="Acquisition">
+                            <field name="acquisition_date"/>
+                            <field name="acquisition_cost" widget="monetary"/>
+                            <field name="currency_id" invisible="1"/>
+                            <field name="condition"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                        <group string="Warranty" invisible="not warranty_required">
+                            <field name="warranty_required" invisible="1"/>
+                            <field name="warranty_period" string="Coverage (Months)"/>
+                            <field name="warranty_expiry_date"/>
+                            <field name="warranty_active" string="Under Warranty"
+                                   widget="boolean_toggle" readonly="1"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <page string="Description" name="description">
+                            <field name="description" nolabel="1"
+                                   placeholder="Specifications, accessories, notes…"/>
+                        </page>
+                        <page string="Allocation History" name="allocations">
+                            <field name="allocation_ids" readonly="1">
+                                <tree decoration-info="state == 'approved'"
+                                      decoration-danger="state == 'overdue'"
+                                      decoration-muted="state == 'returned'">
+                                    <field name="name"/>
+                                    <field name="employee_id"/>
+                                    <field name="department_id"/>
+                                    <field name="allocation_date"/>
+                                    <field name="expected_return_date"/>
+                                    <field name="return_date"/>
+                                    <field name="is_transfer"/>
+                                    <field name="state" widget="badge"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="Maintenance History" name="maintenance">
+                            <field name="maintenance_ids" readonly="1">
+                                <tree decoration-danger="priority == '2'">
+                                    <field name="name"/>
+                                    <field name="request_date"/>
+                                    <field name="requester_id"/>
+                                    <field name="technician_id"/>
+                                    <field name="priority" widget="priority"/>
+                                    <field name="total_hours"/>
+                                    <field name="state" widget="badge"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="Bookings" name="bookings" invisible="not bookable">
+                            <field name="booking_ids" readonly="1">
+                                <tree>
+                                    <field name="name"/>
+                                    <field name="user_id"/>
+                                    <field name="start_time"/>
+                                    <field name="end_time"/>
+                                    <field name="duration" widget="float_time"/>
+                                    <field name="state" widget="badge"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="Audit Trail" name="audits">
+                            <field name="audit_line_ids" readonly="1">
+                                <tree>
+                                    <field name="cycle_id"/>
+                                    <field name="check_date"/>
+                                    <field name="auditor_id"/>
+                                    <field name="result" widget="badge"
+                                           decoration-success="result == 'verified'"
+                                           decoration-danger="result in ('missing', 'damaged')"/>
+                                    <field name="notes"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_asset_search" model="ir.ui.view">
+        <field name="name">assetflow.asset.search</field>
+        <field name="model">assetflow.asset</field>
+        <field name="arch" type="xml">
+            <search string="Assets">
+                <!-- Fast lookup: one box matches tag, name or serial number. -->
+                <field name="name" string="Asset"
+                       filter_domain="['|', '|', ('name', 'ilike', self),
+                                            ('asset_tag', 'ilike', self),
+                                            ('serial_number', 'ilike', self)]"/>
+                <field name="asset_tag"/>
+                <field name="serial_number"/>
+                <field name="category_id"/>
+                <field name="location"/>
+                <field name="current_holder_id" string="Held By"/>
+
+                <filter name="filter_available" string="Available"
+                        domain="[('state', '=', 'available')]"/>
+                <filter name="filter_allocated" string="Allocated"
+                        domain="[('state', '=', 'allocated')]"/>
+                <filter name="filter_reserved" string="Reserved"
+                        domain="[('state', '=', 'reserved')]"/>
+                <filter name="filter_maintenance" string="Under Maintenance"
+                        domain="[('state', '=', 'maintenance')]"/>
+                <separator/>
+                <filter name="filter_bookable" string="Shared Resources"
+                        domain="[('bookable', '=', True)]"/>
+                <filter name="filter_damaged" string="Damaged"
+                        domain="[('condition', '=', 'damaged')]"/>
+                <filter name="filter_out_of_circulation" string="Out of Circulation"
+                        domain="[('state', 'in', ('lost', 'retired', 'disposed'))]"/>
+                <separator/>
+                <filter name="filter_under_warranty" string="Under Warranty"
+                        domain="[('warranty_active', '=', True)]"/>
+                <filter name="filter_warranty_expired" string="Warranty Expired"
+                        domain="[('warranty_required', '=', True), ('warranty_active', '=', False)]"/>
+                <separator/>
+                <filter name="filter_archived" string="Archived"
+                        domain="[('active', '=', False)]"/>
+
+                <group expand="0" string="Group By">
+                    <filter name="group_state" string="Lifecycle State"
+                            context="{'group_by': 'state'}"/>
+                    <filter name="group_category" string="Category"
+                            context="{'group_by': 'category_id'}"/>
+                    <filter name="group_condition" string="Condition"
+                            context="{'group_by': 'condition'}"/>
+                    <filter name="group_location" string="Location"
+                            context="{'group_by': 'location'}"/>
+                    <filter name="group_holder" string="Held By"
+                            context="{'group_by': 'current_holder_id'}"/>
+                    <filter name="group_department" string="Holding Department"
+                            context="{'group_by': 'current_department_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="view_asset_graph" model="ir.ui.view">
+        <field name="name">assetflow.asset.graph</field>
+        <field name="model">assetflow.asset</field>
+        <field name="arch" type="xml">
+            <graph string="Assets" type="bar" sample="1">
+                <field name="category_id"/>
+                <field name="state"/>
+                <field name="acquisition_cost" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="view_asset_pivot" model="ir.ui.view">
+        <field name="name">assetflow.asset.pivot</field>
+        <field name="model">assetflow.asset</field>
+        <field name="arch" type="xml">
+            <pivot string="Assets" sample="1">
+                <field name="category_id" type="row"/>
+                <field name="state" type="col"/>
+                <field name="acquisition_cost" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="action_asset" model="ir.actions.act_window">
+        <field name="name">Assets</field>
+        <field name="res_model">assetflow.asset</field>
+        <field name="view_mode">kanban,tree,form,graph,pivot</field>
+        <field name="search_view_id" ref="view_asset_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Register your first asset</p>
+            <p>Every asset gets a unique tag (AF-0001) and a lifecycle you can
+               follow from registration to disposal.</p>
+        </field>
+    </record>
+
+    <!-- Dashboard: the same asset data, opened on the state kanban with the
+         graph and pivot one click away. -->
+    <record id="action_dashboard" model="ir.actions.act_window">
+        <field name="name">Dashboard</field>
+        <field name="res_model">assetflow.asset</field>
+        <field name="view_mode">kanban,graph,pivot,tree,form</field>
+        <field name="search_view_id" ref="view_asset_search"/>
+        <field name="context">{'search_default_group_state': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Your asset fleet at a glance</p>
+            <p>Assets grouped by lifecycle state. Switch to the graph or pivot
+               view for value and category breakdowns.</p>
+        </field>
+    </record>
+
+    <!-- ================================================================== -->
+    <!--  ALLOCATION &amp; TRANSFER                                          -->
+    <!-- ================================================================== -->
+    <record id="view_asset_allocation_tree" model="ir.ui.view">
+        <field name="name">assetflow.asset.allocation.tree</field>
+        <field name="model">assetflow.asset.allocation</field>
+        <field name="arch" type="xml">
+            <tree string="Allocations"
+                  decoration-info="state == 'approved'"
+                  decoration-danger="state == 'overdue'"
+                  decoration-muted="state == 'returned'"
+                  decoration-warning="state == 'requested'">
+                <field name="name"/>
+                <field name="asset_id"/>
+                <field name="employee_id" widget="many2one_avatar_user"/>
+                <field name="department_id" optional="show"/>
+                <field name="allocation_date"/>
+                <field name="expected_return_date" optional="show"/>
+                <field name="return_date" optional="show"/>
+                <field name="days_overdue" optional="hide"/>
+                <field name="is_transfer" string="Transfer" optional="show"/>
+                <field name="previous_holder_id" optional="hide"/>
+                <field name="state" widget="badge"
+                       decoration-info="state == 'approved'"
+                       decoration-danger="state == 'overdue'"
+                       decoration-warning="state == 'requested'"
+                       decoration-muted="state == 'returned'"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_asset_allocation_form" model="ir.ui.view">
+        <field name="name">assetflow.asset.allocation.form</field>
+        <field name="model">assetflow.asset.allocation</field>
+        <field name="arch" type="xml">
+            <form string="Allocation">
+                <header>
+                    <button name="action_submit" type="object" string="Submit Request"
+                            class="btn-primary" invisible="state != 'draft'"/>
+                    <button name="action_approve" type="object" string="Approve"
+                            class="btn-primary"
+                            invisible="state not in ('draft', 'requested')"
+                            groups="assetflow.group_assetflow_dept_head"/>
+                    <button name="action_reset_to_draft" type="object" string="Refuse"
+                            invisible="state != 'requested'"
+                            groups="assetflow.group_assetflow_dept_head"/>
+                    <button name="action_return" type="object" string="Register Return"
+                            class="btn-primary"
+                            invisible="state not in ('approved', 'overdue')"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,requested,approved,returned"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_open_asset" type="object"
+                                class="oe_stat_button" icon="fa-cube" string="Asset"/>
+                    </div>
+                    <widget name="web_ribbon" title="Transfer" bg_color="text-bg-info"
+                            invisible="not is_transfer"/>
+                    <div class="oe_title">
+                        <h1><field name="name" readonly="1"/></h1>
+                    </div>
+
+                    <!-- Conflict context: shown while a transfer is being raised. -->
+                    <div class="alert alert-warning" role="alert"
+                         invisible="not is_transfer">
+                        This is a <b>transfer request</b>. On approval,
+                        <field name="previous_holder_id" class="oe_inline" readonly="1"/>
+                        will hand the asset over to
+                        <field name="employee_id" class="oe_inline" readonly="1"/>,
+                        and their allocation
+                        (<field name="previous_allocation_id" class="oe_inline" readonly="1"/>)
+                        will be closed automatically.
+                    </div>
+                    <div class="alert alert-danger" role="alert"
+                         invisible="state != 'overdue'">
+                        Overdue by <field name="days_overdue" class="oe_inline" readonly="1"/> day(s).
+                    </div>
+
+                    <group>
+                        <group string="Asset">
+                            <field name="asset_id"
+                                   readonly="state not in ('draft', 'requested')"
+                                   options="{'no_create': True}"/>
+                            <field name="asset_state" widget="badge"/>
+                            <field name="current_holder_id"
+                                   invisible="not current_holder_id"/>
+                            <field name="is_transfer"
+                                   readonly="state != 'draft'"/>
+                            <field name="previous_allocation_id" invisible="1"/>
+                        </group>
+                        <group string="Assignment">
+                            <field name="employee_id" widget="many2one_avatar_user"
+                                   readonly="state not in ('draft', 'requested')"/>
+                            <field name="department_id"
+                                   readonly="state not in ('draft', 'requested')"/>
+                            <field name="allocation_date"
+                                   readonly="state not in ('draft', 'requested')"/>
+                            <field name="expected_return_date"
+                                   readonly="state in ('returned',)"/>
+                            <field name="return_date" invisible="not return_date"/>
+                        </group>
+                    </group>
+                    <group string="Approval" invisible="not approved_by_id">
+                        <group>
+                            <field name="approved_by_id"/>
+                            <field name="approval_date"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Transfer Reason" name="transfer"
+                              invisible="not is_transfer">
+                            <field name="transfer_reason" nolabel="1"
+                                   placeholder="Why does the asset need to change hands?"/>
+                        </page>
+                        <page string="Notes" name="notes">
+                            <field name="notes" nolabel="1"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_asset_allocation_search" model="ir.ui.view">
+        <field name="name">assetflow.asset.allocation.search</field>
+        <field name="model">assetflow.asset.allocation</field>
+        <field name="arch" type="xml">
+            <search string="Allocations">
+                <field name="name"/>
+                <field name="asset_id"/>
+                <field name="employee_id"/>
+                <field name="department_id"/>
+                <filter name="filter_mine" string="My Allocations"
+                        domain="[('employee_id', '=', uid)]"/>
+                <separator/>
+                <filter name="filter_requested" string="To Approve"
+                        domain="[('state', '=', 'requested')]"/>
+                <filter name="filter_active" string="Active"
+                        domain="[('state', 'in', ('approved', 'overdue'))]"/>
+                <filter name="filter_overdue" string="Overdue"
+                        domain="[('state', '=', 'overdue')]"/>
+                <filter name="filter_returned" string="Returned"
+                        domain="[('state', '=', 'returned')]"/>
+                <separator/>
+                <filter name="filter_transfers" string="Transfers Only"
+                        domain="[('is_transfer', '=', True)]"/>
+                <separator/>
+                <filter name="filter_this_month" string="This Month"
+                        date="allocation_date"/>
+                <group expand="0" string="Group By">
+                    <filter name="group_state" string="Status"
+                            context="{'group_by': 'state'}"/>
+                    <filter name="group_employee" string="Employee"
+                            context="{'group_by': 'employee_id'}"/>
+                    <filter name="group_department" string="Department"
+                            context="{'group_by': 'department_id'}"/>
+                    <filter name="group_asset" string="Asset"
+                            context="{'group_by': 'asset_id'}"/>
+                    <filter name="group_date" string="Allocation Month"
+                            context="{'group_by': 'allocation_date:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_asset_allocation" model="ir.actions.act_window">
+        <field name="name">Allocations &amp; Transfers</field>
+        <field name="res_model">assetflow.asset.allocation</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="view_asset_allocation_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Allocate your first asset</p>
+            <p>An asset can only have one active holder. If it is already taken,
+               AssetFlow offers you a <b>Transfer Request</b> instead.</p>
+        </field>
+    </record>
+
+    <!-- Target of the RedirectWarning raised on an allocation conflict:
+         opens a pre-filled transfer request (see allocation._raise_conflict). -->
+    <record id="action_asset_allocation_transfer" model="ir.actions.act_window">
+        <field name="name">Transfer Request</field>
+        <field name="res_model">assetflow.asset.allocation</field>
+        <field name="view_mode">form,tree</field>
+        <field name="view_id" ref="view_asset_allocation_form"/>
+        <field name="target">current</field>
+        <field name="context">{'default_is_transfer': True}</field>
+    </record>
+
+    <!-- ================================================================== -->
+    <!--  RESOURCE BOOKING                                                   -->
+    <!-- ================================================================== -->
+    <record id="view_resource_booking_calendar" model="ir.ui.view">
+        <field name="name">assetflow.resource.booking.calendar</field>
+        <field name="model">assetflow.resource.booking</field>
+        <field name="arch" type="xml">
+            <!-- Colourised by booking status through the stored `color` field
+                 (see STATE_COLORS in models/resource_booking.py). -->
+            <calendar string="Resource Bookings"
+                      date_start="start_time"
+                      date_stop="end_time"
+                      color="color"
+                      mode="week"
+                      event_open_popup="true"
+                      quick_create="false">
+                <field name="asset_id" filters="1"/>
+                <field name="user_id" avatar_field="avatar_128"/>
+                <field name="state"/>
+                <field name="purpose"/>
+            </calendar>
+        </field>
+    </record>
+
+    <record id="view_resource_booking_tree" model="ir.ui.view">
+        <field name="name">assetflow.resource.booking.tree</field>
+        <field name="model">assetflow.resource.booking</field>
+        <field name="arch" type="xml">
+            <tree string="Bookings"
+                  decoration-success="state == 'ongoing'"
+                  decoration-info="state == 'upcoming'"
+                  decoration-muted="state in ('completed', 'cancelled')">
+                <field name="name"/>
+                <field name="asset_id"/>
+                <field name="user_id" widget="many2one_avatar_user"/>
+                <field name="start_time"/>
+                <field name="end_time"/>
+                <field name="duration" widget="float_time" sum="Total Hours"/>
+                <field name="purpose" optional="show"/>
+                <field name="state" widget="badge"
+                       decoration-success="state == 'ongoing'"
+                       decoration-info="state == 'upcoming'"
+                       decoration-muted="state in ('completed', 'cancelled')"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_resource_booking_form" model="ir.ui.view">
+        <field name="name">assetflow.resource.booking.form</field>
+        <field name="model">assetflow.resource.booking</field>
+        <field name="arch" type="xml">
+            <form string="Booking">
+                <header>
+                    <button name="action_start" type="object" string="Start"
+                            class="btn-primary" invisible="state != 'upcoming'"/>
+                    <button name="action_complete" type="object" string="Complete"
+                            class="btn-primary"
+                            invisible="state not in ('upcoming', 'ongoing')"/>
+                    <button name="action_cancel" type="object" string="Cancel"
+                            invisible="state in ('completed', 'cancelled')"/>
+                    <button name="action_reset_to_upcoming" type="object"
+                            string="Reopen" invisible="state != 'cancelled'"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="upcoming,ongoing,completed"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name" readonly="1"/></h1>
+                    </div>
+                    <group>
+                        <group string="Resource">
+                            <field name="asset_id"
+                                   options="{'no_create': True}"
+                                   readonly="state in ('completed', 'cancelled')"/>
+                            <field name="user_id" widget="many2one_avatar_user"/>
+                            <field name="department_id"/>
+                        </group>
+                        <group string="Slot">
+                            <field name="start_time"
+                                   readonly="state in ('completed', 'cancelled')"/>
+                            <field name="end_time"
+                                   readonly="state in ('completed', 'cancelled')"/>
+                            <field name="duration" widget="float_time"/>
+                            <field name="purpose" placeholder="e.g. Client demo"/>
+                        </group>
+                    </group>
+                    <group string="Notes">
+                        <field name="notes" nolabel="1"/>
+                    </group>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_resource_booking_search" model="ir.ui.view">
+        <field name="name">assetflow.resource.booking.search</field>
+        <field name="model">assetflow.resource.booking</field>
+        <field name="arch" type="xml">
+            <search string="Bookings">
+                <field name="asset_id"/>
+                <field name="user_id"/>
+                <field name="purpose"/>
+                <filter name="filter_mine" string="My Bookings"
+                        domain="[('user_id', '=', uid)]"/>
+                <separator/>
+                <filter name="filter_upcoming" string="Upcoming"
+                        domain="[('state', '=', 'upcoming')]"/>
+                <filter name="filter_ongoing" string="Ongoing"
+                        domain="[('state', '=', 'ongoing')]"/>
+                <filter name="filter_completed" string="Completed"
+                        domain="[('state', '=', 'completed')]"/>
+                <filter name="filter_cancelled" string="Cancelled"
+                        domain="[('state', '=', 'cancelled')]"/>
+                <separator/>
+                <filter name="filter_today" string="Today" date="start_time"/>
+                <group expand="0" string="Group By">
+                    <filter name="group_asset" string="Resource"
+                            context="{'group_by': 'asset_id'}"/>
+                    <filter name="group_user" string="Booked By"
+                            context="{'group_by': 'user_id'}"/>
+                    <filter name="group_state" string="Status"
+                            context="{'group_by': 'state'}"/>
+                    <filter name="group_start" string="Start Day"
+                            context="{'group_by': 'start_time:day'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_resource_booking" model="ir.actions.act_window">
+        <field name="name">Resource Bookings</field>
+        <field name="res_model">assetflow.resource.booking</field>
+        <field name="view_mode">calendar,tree,form</field>
+        <field name="search_view_id" ref="view_resource_booking_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Book a shared resource</p>
+            <p>Meeting rooms, vehicles, lab gear… Two bookings of the same
+               resource can never overlap.</p>
+        </field>
+    </record>
+
+    <!-- ================================================================== -->
+    <!--  MAINTENANCE                                                        -->
+    <!-- ================================================================== -->
+    <record id="view_maintenance_tree" model="ir.ui.view">
+        <field name="name">assetflow.maintenance.tree</field>
+        <field name="model">assetflow.maintenance</field>
+        <field name="arch" type="xml">
+            <tree string="Maintenance Requests"
+                  decoration-danger="priority == '2' and state not in ('resolved', 'rejected')"
+                  decoration-muted="state in ('resolved', 'rejected')">
+                <field name="name"/>
+                <field name="asset_id"/>
+                <field name="requester_id" widget="many2one_avatar_user"/>
+                <field name="technician_id" widget="many2one_avatar_user" optional="show"/>
+                <field name="request_date"/>
+                <field name="priority" widget="priority"/>
+                <field name="total_hours" optional="hide"/>
+                <field name="repair_cost" optional="hide" sum="Total Cost"/>
+                <field name="currency_id" column_invisible="1"/>
+                <field name="state" widget="badge"
+                       decoration-warning="state == 'pending'"
+                       decoration-info="state in ('approved', 'in_progress')"
+                       decoration-success="state == 'resolved'"
+                       decoration-danger="state == 'rejected'"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_maintenance_form" model="ir.ui.view">
+        <field name="name">assetflow.maintenance.form</field>
+        <field name="model">assetflow.maintenance</field>
+        <field name="arch" type="xml">
+            <form string="Maintenance Request">
+                <header>
+                    <button name="action_approve" type="object" string="Approve"
+                            class="btn-primary" invisible="state != 'pending'"
+                            groups="assetflow.group_assetflow_manager"
+                            confirm="Approving takes the asset off the floor and puts it under maintenance. Continue?"/>
+                    <button name="action_reject" type="object" string="Reject"
+                            invisible="state != 'pending'"
+                            groups="assetflow.group_assetflow_manager"/>
+                    <button name="action_start" type="object" string="Start Work"
+                            class="btn-primary" invisible="state != 'approved'"/>
+                    <button name="action_resolve" type="object" string="Mark Resolved"
+                            class="btn-primary"
+                            invisible="state not in ('approved', 'in_progress')"
+                            confirm="Resolving puts the asset back into circulation. Continue?"/>
+                    <button name="action_log_work" type="object" string="Log Work"
+                            invisible="state not in ('approved', 'in_progress')"/>
+                    <button name="action_reset_to_pending" type="object" string="Reopen"
+                            invisible="state != 'rejected'"
+                            groups="assetflow.group_assetflow_manager"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="pending,approved,in_progress,resolved"/>
+                </header>
+                <sheet>
+                    <widget name="web_ribbon" title="Rejected" bg_color="text-bg-danger"
+                            invisible="state != 'rejected'"/>
+                    <div class="oe_title">
+                        <h1><field name="name" readonly="1"/></h1>
+                    </div>
+                    <div class="alert alert-danger" role="alert"
+                         invisible="state != 'rejected'">
+                        <b>Rejected:</b> <field name="rejection_reason" class="oe_inline" readonly="1"/>
+                    </div>
+                    <group>
+                        <group string="Asset">
+                            <field name="asset_id" options="{'no_create': True}"
+                                   readonly="state != 'pending'"/>
+                            <field name="category_id"/>
+                            <field name="priority" widget="priority"/>
+                        </group>
+                        <group string="People">
+                            <field name="requester_id" widget="many2one_avatar_user"
+                                   readonly="state != 'pending'"/>
+                            <field name="department_id"/>
+                            <field name="technician_id" widget="many2one_avatar_user"
+                                   groups="assetflow.group_assetflow_manager"/>
+                            <field name="request_date"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="description" placeholder="What is wrong with the asset?"
+                               readonly="state in ('resolved', 'rejected')"/>
+                    </group>
+                    <group>
+                        <group string="Attachments">
+                            <field name="attachment_ids" widget="many2many_binary"
+                                   nolabel="1" colspan="2"/>
+                        </group>
+                        <group string="Outcome" invisible="state == 'pending'">
+                            <field name="approved_by_id" invisible="not approved_by_id"/>
+                            <field name="approval_date" invisible="not approval_date"/>
+                            <field name="start_date" invisible="not start_date"/>
+                            <field name="resolution_date" invisible="not resolution_date"/>
+                            <field name="total_hours"/>
+                            <field name="repair_cost" widget="monetary"/>
+                            <field name="currency_id" invisible="1"/>
+                        </group>
+                    </group>
+                    <group string="Rejection Reason" invisible="state != 'pending'"
+                           groups="assetflow.group_assetflow_manager">
+                        <field name="rejection_reason" nolabel="1"
+                               placeholder="Required to reject the request…"/>
+                    </group>
+                    <notebook>
+                        <page string="Technician Logs" name="logs">
+                            <field name="log_ids"
+                                   readonly="state in ('pending', 'rejected')">
+                                <tree editable="bottom">
+                                    <field name="log_date"/>
+                                    <field name="technician_id" widget="many2one_avatar_user"/>
+                                    <field name="description"/>
+                                    <field name="parts_used"/>
+                                    <field name="hours_spent" sum="Total"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="Resolution" name="resolution"
+                              invisible="state not in ('in_progress', 'resolved')">
+                            <field name="resolution_notes" nolabel="1"
+                                   placeholder="What was done to fix it?"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_maintenance_kanban" model="ir.ui.view">
+        <field name="name">assetflow.maintenance.kanban</field>
+        <field name="model">assetflow.maintenance</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="state" sample="1" quick_create="false">
+                <field name="color"/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div t-attf-class="oe_kanban_global_click oe_kanban_card #{kanban_color(record.color.raw_value)}">
+                            <div class="o_kanban_record_top">
+                                <div class="o_kanban_record_headings">
+                                    <strong><field name="asset_id"/></strong>
+                                    <small class="text-muted d-block"><field name="name"/></small>
+                                </div>
+                                <field name="priority" widget="priority"/>
+                            </div>
+                            <div class="o_kanban_record_body">
+                                <field name="description"/>
+                            </div>
+                            <div class="o_kanban_record_bottom mt-2">
+                                <div class="oe_kanban_bottom_left">
+                                    <field name="request_date" widget="date"/>
+                                </div>
+                                <div class="oe_kanban_bottom_right">
+                                    <field name="technician_id" widget="many2one_avatar_user"/>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="view_maintenance_search" model="ir.ui.view">
+        <field name="name">assetflow.maintenance.search</field>
+        <field name="model">assetflow.maintenance</field>
+        <field name="arch" type="xml">
+            <search string="Maintenance">
+                <field name="name"/>
+                <field name="asset_id"/>
+                <field name="requester_id"/>
+                <field name="technician_id"/>
+                <field name="description"/>
+                <filter name="filter_mine" string="My Requests"
+                        domain="[('requester_id', '=', uid)]"/>
+                <filter name="filter_my_work" string="Assigned to Me"
+                        domain="[('technician_id', '=', uid)]"/>
+                <separator/>
+                <filter name="filter_pending" string="Pending Approval"
+                        domain="[('state', '=', 'pending')]"/>
+                <filter name="filter_open" string="Open"
+                        domain="[('state', 'in', ('approved', 'in_progress'))]"/>
+                <filter name="filter_resolved" string="Resolved"
+                        domain="[('state', '=', 'resolved')]"/>
+                <separator/>
+                <filter name="filter_high" string="High Priority"
+                        domain="[('priority', '=', '2')]"/>
+                <group expand="0" string="Group By">
+                    <filter name="group_state" string="Status"
+                            context="{'group_by': 'state'}"/>
+                    <filter name="group_priority" string="Priority"
+                            context="{'group_by': 'priority'}"/>
+                    <filter name="group_asset" string="Asset"
+                            context="{'group_by': 'asset_id'}"/>
+                    <filter name="group_technician" string="Technician"
+                            context="{'group_by': 'technician_id'}"/>
+                    <filter name="group_category" string="Category"
+                            context="{'group_by': 'category_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_maintenance" model="ir.actions.act_window">
+        <field name="name">Maintenance</field>
+        <field name="res_model">assetflow.maintenance</field>
+        <field name="view_mode">kanban,tree,form</field>
+        <field name="search_view_id" ref="view_maintenance_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Report an issue</p>
+            <p>Approving a request automatically moves the asset to
+               <b>Under Maintenance</b>; resolving it puts the asset back into
+               circulation.</p>
+        </field>
+    </record>
+
+    <!-- ================================================================== -->
+    <!--  AUDIT                                                              -->
+    <!-- ================================================================== -->
+    <record id="view_audit_line_tree" model="ir.ui.view">
+        <field name="name">assetflow.audit.line.tree</field>
+        <field name="model">assetflow.audit.line</field>
+        <field name="arch" type="xml">
+            <tree string="Audit Lines" editable="bottom"
+                  decoration-success="result == 'verified'"
+                  decoration-danger="result == 'missing'"
+                  decoration-warning="result == 'damaged'">
+                <field name="cycle_id" column_invisible="context.get('hide_cycle')"/>
+                <field name="asset_id" readonly="1"/>
+                <field name="asset_tag" readonly="1"/>
+                <field name="serial_number" readonly="1" optional="show"/>
+                <field name="expected_holder_id" readonly="1" optional="show"/>
+                <field name="expected_location" readonly="1" optional="show"/>
+                <field name="actual_location" placeholder="Where was it found?"/>
+                <field name="notes"/>
+                <field name="result" widget="badge"
+                       decoration-success="result == 'verified'"
+                       decoration-danger="result == 'missing'"
+                       decoration-warning="result == 'damaged'"/>
+                <field name="auditor_id" readonly="1" optional="show"/>
+                <field name="check_date" readonly="1" optional="hide"/>
+                <field name="cycle_state" column_invisible="1"/>
+                <button name="action_mark_verified" type="object" string="Verified"
+                        icon="fa-check text-success" title="Mark as verified"
+                        invisible="cycle_state not in ('open', 'discrepancy_found')"/>
+                <button name="action_mark_missing" type="object" string="Missing"
+                        icon="fa-question-circle text-danger" title="Report missing"
+                        invisible="cycle_state not in ('open', 'discrepancy_found')"/>
+                <button name="action_mark_damaged" type="object" string="Damaged"
+                        icon="fa-exclamation-triangle text-warning" title="Report damaged"
+                        invisible="cycle_state not in ('open', 'discrepancy_found')"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_audit_line_search" model="ir.ui.view">
+        <field name="name">assetflow.audit.line.search</field>
+        <field name="model">assetflow.audit.line</field>
+        <field name="arch" type="xml">
+            <search string="Audit Lines">
+                <field name="asset_id"/>
+                <field name="asset_tag"/>
+                <field name="serial_number"/>
+                <field name="cycle_id"/>
+                <filter name="filter_pending" string="To Check"
+                        domain="[('result', '=', 'pending')]"/>
+                <filter name="filter_discrepancy" string="Discrepancies"
+                        domain="[('result', 'in', ('missing', 'damaged'))]"/>
+                <group expand="0" string="Group By">
+                    <filter name="group_cycle" string="Cycle"
+                            context="{'group_by': 'cycle_id'}"/>
+                    <filter name="group_result" string="Result"
+                            context="{'group_by': 'result'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="view_audit_cycle_tree" model="ir.ui.view">
+        <field name="name">assetflow.audit.cycle.tree</field>
+        <field name="model">assetflow.audit.cycle</field>
+        <field name="arch" type="xml">
+            <tree string="Audit Cycles"
+                  decoration-warning="state == 'discrepancy_found'"
+                  decoration-muted="state == 'closed'">
+                <field name="reference"/>
+                <field name="name"/>
+                <field name="scope"/>
+                <field name="department_id" optional="show"/>
+                <field name="location" optional="hide"/>
+                <field name="date_start"/>
+                <field name="date_end"/>
+                <field name="auditor_ids" widget="many2many_avatar_user" optional="show"/>
+                <field name="progress" widget="progressbar"/>
+                <field name="missing_count" string="Missing"/>
+                <field name="damaged_count" string="Damaged"/>
+                <field name="state" widget="badge"
+                       decoration-info="state == 'open'"
+                       decoration-warning="state == 'discrepancy_found'"
+                       decoration-muted="state == 'closed'"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_audit_cycle_form" model="ir.ui.view">
+        <field name="name">assetflow.audit.cycle.form</field>
+        <field name="model">assetflow.audit.cycle</field>
+        <field name="arch" type="xml">
+            <form string="Audit Cycle">
+                <header>
+                    <button name="action_open" type="object" string="Start Audit"
+                            class="btn-primary" invisible="state != 'draft'"
+                            groups="assetflow.group_assetflow_manager"/>
+                    <button name="action_generate_lines" type="object"
+                            string="Refresh Scope"
+                            invisible="state not in ('draft', 'open', 'discrepancy_found')"
+                            groups="assetflow.group_assetflow_manager"/>
+                    <button name="action_close" type="object" string="Close Audit"
+                            class="btn-primary"
+                            invisible="state not in ('open', 'discrepancy_found')"
+                            groups="assetflow.group_assetflow_manager"
+                            confirm="Closing applies the findings to the assets: missing assets are flagged as lost and damaged ones get a maintenance request. Continue?"/>
+                    <button name="action_reset_to_draft" type="object" string="Back to Draft"
+                            invisible="state not in ('open', 'discrepancy_found')"
+                            groups="assetflow.group_assetflow_manager"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,open,discrepancy_found,closed"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_lines" type="object"
+                                class="oe_stat_button" icon="fa-list-ul">
+                            <field name="total_count" widget="statinfo" string="Assets"/>
+                        </button>
+                        <button name="action_view_lines" type="object"
+                                class="oe_stat_button" icon="fa-exclamation-triangle">
+                            <field name="missing_count" widget="statinfo" string="Missing"/>
+                        </button>
+                    </div>
+                    <widget name="web_ribbon" title="Closed" bg_color="text-bg-secondary"
+                            invisible="state != 'closed'"/>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="e.g. Q3 Engineering Audit"/></h1>
+                        <h2><field name="reference" class="text-muted" readonly="1"/></h2>
+                    </div>
+
+                    <div class="alert alert-warning" role="alert"
+                         invisible="state != 'discrepancy_found'">
+                        <b>Discrepancies found:</b>
+                        <field name="missing_count" class="oe_inline" readonly="1"/> missing and
+                        <field name="damaged_count" class="oe_inline" readonly="1"/> damaged asset(s).
+                        Closing the cycle will flag missing assets as <b>Lost</b>.
+                    </div>
+
+                    <group>
+                        <group string="Scope">
+                            <field name="scope" widget="radio"
+                                   options="{'horizontal': True}"
+                                   readonly="state != 'draft'"/>
+                            <field name="department_id"
+                                   invisible="scope != 'department'"
+                                   required="scope == 'department'"
+                                   readonly="state != 'draft'"/>
+                            <field name="include_sub_departments"
+                                   invisible="scope != 'department'"
+                                   readonly="state != 'draft'"/>
+                            <field name="location"
+                                   invisible="scope != 'location'"
+                                   required="scope == 'location'"
+                                   readonly="state != 'draft'"
+                                   placeholder="e.g. HQ / Floor 2"/>
+                        </group>
+                        <group string="Schedule">
+                            <field name="date_start" readonly="state == 'closed'"/>
+                            <field name="date_end" readonly="state == 'closed'"/>
+                            <field name="auditor_ids" widget="many2many_avatar_user"
+                                   readonly="state == 'closed'"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                    </group>
+
+                    <group string="Progress" invisible="state == 'draft'">
+                        <group>
+                            <field name="progress" widget="progressbar"/>
+                            <field name="pending_count"/>
+                            <field name="verified_count"/>
+                        </group>
+                        <group>
+                            <field name="total_count"/>
+                            <field name="missing_count"/>
+                            <field name="damaged_count"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <page string="Audit Lines" name="lines">
+                            <field name="line_ids" context="{'hide_cycle': True}"
+                                   readonly="state in ('draft', 'closed')">
+                                <tree editable="bottom"
+                                      decoration-success="result == 'verified'"
+                                      decoration-danger="result == 'missing'"
+                                      decoration-warning="result == 'damaged'">
+                                    <field name="asset_id" readonly="1"/>
+                                    <field name="asset_tag" readonly="1"/>
+                                    <field name="serial_number" readonly="1" optional="show"/>
+                                    <field name="expected_holder_id" readonly="1"/>
+                                    <field name="expected_location" readonly="1" optional="show"/>
+                                    <field name="actual_location"/>
+                                    <field name="notes"/>
+                                    <field name="result" widget="badge"
+                                           decoration-success="result == 'verified'"
+                                           decoration-danger="result == 'missing'"
+                                           decoration-warning="result == 'damaged'"/>
+                                    <field name="auditor_id" readonly="1" optional="show"/>
+                                    <field name="check_date" readonly="1" optional="hide"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="Closing Report" name="report">
+                            <field name="notes" nolabel="1"
+                                   placeholder="Summary, root causes, follow-up actions…"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_audit_cycle_search" model="ir.ui.view">
+        <field name="name">assetflow.audit.cycle.search</field>
+        <field name="model">assetflow.audit.cycle</field>
+        <field name="arch" type="xml">
+            <search string="Audit Cycles">
+                <field name="name"/>
+                <field name="reference"/>
+                <field name="department_id"/>
+                <field name="auditor_ids"/>
+                <filter name="filter_mine" string="I Am an Auditor"
+                        domain="[('auditor_ids', 'in', [uid])]"/>
+                <separator/>
+                <filter name="filter_running" string="Running"
+                        domain="[('state', 'in', ('open', 'discrepancy_found'))]"/>
+                <filter name="filter_discrepancy" string="With Discrepancies"
+                        domain="[('state', '=', 'discrepancy_found')]"/>
+                <filter name="filter_closed" string="Closed"
+                        domain="[('state', '=', 'closed')]"/>
+                <group expand="0" string="Group By">
+                    <filter name="group_state" string="Status"
+                            context="{'group_by': 'state'}"/>
+                    <filter name="group_scope" string="Scope"
+                            context="{'group_by': 'scope'}"/>
+                    <filter name="group_department" string="Department"
+                            context="{'group_by': 'department_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_audit_cycle" model="ir.actions.act_window">
+        <field name="name">Audit Cycles</field>
+        <field name="res_model">assetflow.audit.cycle</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="view_audit_cycle_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Plan your first audit</p>
+            <p>Pick a scope, assign auditors, and let them check off every asset.
+               Closing the cycle writes the findings back onto the assets.</p>
+        </field>
+    </record>
+
+    <record id="action_audit_line" model="ir.actions.act_window">
+        <field name="name">My Audit Tasks</field>
+        <field name="res_model">assetflow.audit.line</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="view_audit_line_search"/>
+        <field name="domain">[('cycle_id.state', 'in', ('open', 'discrepancy_found'))]</field>
+        <field name="context">{'search_default_filter_pending': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Nothing to audit right now</p>
+            <p>Assets from the audit cycles you are assigned to will show up here.</p>
+        </field>
+    </record>
+
+    <!-- ================================================================== -->
+    <!--  MENUS                                                              -->
+    <!-- ================================================================== -->
+    <menuitem id="menu_assetflow_root"
+              name="AssetFlow"
+              web_icon="assetflow,static/description/icon.png"
+              sequence="15"
+              groups="assetflow.group_assetflow_employee"/>
+
+    <menuitem id="menu_assetflow_dashboard"
+              name="Dashboard"
+              parent="menu_assetflow_root"
+              action="action_dashboard"
+              sequence="5"/>
+
+    <!-- Operations -->
+    <menuitem id="menu_assetflow_operations"
+              name="Operations"
+              parent="menu_assetflow_root"
+              sequence="10"/>
+
+    <menuitem id="menu_assetflow_assets"
+              name="Assets"
+              parent="menu_assetflow_operations"
+              action="action_asset"
+              sequence="10"/>
+
+    <menuitem id="menu_assetflow_allocations"
+              name="Allocations &amp; Transfers"
+              parent="menu_assetflow_operations"
+              action="action_asset_allocation"
+              sequence="20"/>
+
+    <menuitem id="menu_assetflow_bookings"
+              name="Resource Bookings"
+              parent="menu_assetflow_operations"
+              action="action_resource_booking"
+              sequence="30"/>
+
+    <menuitem id="menu_assetflow_maintenance"
+              name="Maintenance"
+              parent="menu_assetflow_operations"
+              action="action_maintenance"
+              sequence="40"/>
+
+    <!-- Audits -->
+    <menuitem id="menu_assetflow_audits"
+              name="Audits"
+              parent="menu_assetflow_root"
+              sequence="20"/>
+
+    <menuitem id="menu_assetflow_audit_cycles"
+              name="Audit Cycles"
+              parent="menu_assetflow_audits"
+              action="action_audit_cycle"
+              sequence="10"/>
+
+    <menuitem id="menu_assetflow_audit_lines"
+              name="My Audit Tasks"
+              parent="menu_assetflow_audits"
+              action="action_audit_line"
+              sequence="20"/>
+
+    <!-- Configuration -->
+    <menuitem id="menu_assetflow_configuration"
+              name="Configuration"
+              parent="menu_assetflow_root"
+              sequence="90"
+              groups="assetflow.group_assetflow_manager"/>
+
+    <menuitem id="menu_assetflow_categories"
+              name="Asset Categories"
+              parent="menu_assetflow_configuration"
+              action="action_asset_category"
+              sequence="10"/>
+
+    <menuitem id="menu_assetflow_departments"
+              name="Departments"
+              parent="menu_assetflow_configuration"
+              action="action_department"
+              sequence="20"
+              groups="assetflow.group_assetflow_admin"/>
+
+    <menuitem id="menu_assetflow_employees"
+              name="Employee Directory"
+              parent="menu_assetflow_configuration"
+              action="action_employee_directory"
+              sequence="30"
+              groups="assetflow.group_assetflow_admin"/>
+
+</odoo>
