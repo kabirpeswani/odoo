@@ -1,130 +1,207 @@
-# AssetFlow – Enterprise Asset & Resource Management System
+# AssetFlow
 
-**AssetFlow** is an ERP platform for organizations to centrally manage physical assets and shared resources. It replaces manual tracking with a digital system that manages asset lifecycles, allocations, bookings, maintenance, audits, notifications, and reporting.
+**Enterprise Asset & Resource Management System**
 
-### Core Features
+---
 
-* **Authentication**
+## Overall Vision
 
-  * Employee signup (no role selection)
-  * Admin assigns Asset Manager and Department Head roles
-  * Login, password reset, session management
+The vision for AssetFlow is to simplify and digitize how organizations track, allocate, and maintain their physical assets and shared resources through a centralized ERP platform. This is not tied to any single industry; any organization with equipment, furniture, vehicles, or shared spaces (offices, schools, hospitals, factories, agencies) can use it.
 
-* **Dashboard**
+The platform aims to reduce manual tracking inefficiencies (spreadsheets, paper logs) by enabling structured asset lifecycles, centralized resource booking, and real-time visibility into who holds what, where it is, and its condition.
 
-  * KPIs: Available Assets, Allocated Assets, Maintenance, Active Bookings, Pending Transfers, Upcoming/Overdue Returns
-  * Quick actions for asset registration, booking, and maintenance requests
+AssetFlow focuses on delivering core ERP functionality with clean architecture, role-based workflows, and scalable module design without touching purchasing, invoicing, or accounting concerns.
 
-* **Organization Setup (Admin)**
+## Mission
 
-  * Manage departments and hierarchy
-  * Create asset categories
-  * Manage employee directory and assign roles
+The mission for the hackathon team is to build a user-centric, responsive application that simplifies asset and resource management for any organization. The platform should provide staff with intuitive tools to:
 
-* **Asset Management**
+- Set up departments, asset categories, and the employee directory
+- Register and track assets through their full lifecycle
+- Allocate assets to employees/departments with conflict handling
+- Book shared resources (rooms, vehicles, equipment) without overlaps
+- Run a structured maintenance approval workflow
+- Run structured audit cycles to catch discrepancies
+- Get notified of overdue returns, bookings, and maintenance events
 
-  * Register assets with category, serial number, asset tag, location, condition, documents, and bookable flag
-  * Search/filter assets
-  * Track lifecycle:
+## Problem Statement
 
-    * Available
-    * Allocated
-    * Reserved
-    * Under Maintenance
-    * Lost
-    * Retired
-    * Disposed
-  * View allocation and maintenance history
+Design and develop an Enterprise Asset & Resource Management System where organizations can:
 
-* **Asset Allocation & Transfers**
+- Maintain departments, asset categories, and an employee directory
+- Track assets through a flexible lifecycle (including states: Available, Allocated, Reserved, Under Maintenance, Lost, Retired, Disposed) where assets can transition between states (e.g., Available ↔ Under Maintenance, Allocated → Available)
+- Allocate assets to employees/departments, with the system preventing double-allocation of a single asset
+- Book shared/limited resources by time slot, with overlap validation
+- Route maintenance requests through an approval workflow before repair work starts
+- Run scheduled audit cycles with assigned auditors and auto-generated discrepancy reports
+- Surface overdue returns, bookings, and maintenance activity through notifications and a KPI dashboard
 
-  * Allocate assets to employees/departments
-  * Prevent double allocation
-  * Transfer approval workflow
-  * Asset return with condition check
-  * Automatic overdue tracking
+The application must demonstrate proper ERP architecture, reusable modules, secure role-based workflows (with realistic account creation, not self-assigned admin roles), and intuitive UI/UX while handling relationships between departments, employees, assets, bookings, maintenance requests, and audits.
 
-* **Resource Booking**
+---
 
-  * Book shared resources (rooms, vehicles, equipment)
-  * Calendar view
-  * Prevent overlapping bookings
-  * Cancel/reschedule
-  * Booking reminders
+## Features
 
-* **Maintenance Management**
+### 1. Login / Signup Screen
 
-  * Submit maintenance requests
-  * Approval workflow:
+**Purpose:** Authenticate users with realistic, non-self-elevating account creation.
 
-    * Pending → Approved/Rejected → Assigned → In Progress → Resolved
-  * Automatically update asset status
-  * Maintain repair history
+**Key Functionality/Components:**
 
-* **Asset Audits**
+- Signup creates an Employee account only — no role selection at signup
+- Admin creates/promotes Department Heads and Asset Managers from the Employee Directory (see Screen 3)
+- Email & password login, forgot password, session validation
 
-  * Create audit cycles
-  * Assign auditors
-  * Verify assets (Verified/Missing/Damaged)
-  * Auto-generate discrepancy reports
-  * Lock completed audits and update asset status
+### 2. Dashboard / Home Screen
 
-* **Reports & Analytics**
+**Purpose:** Give every role a real-time operational snapshot.
 
-  * Asset utilization
-  * Maintenance trends
-  * Assets nearing retirement
-  * Department allocation summaries
-  * Resource booking heatmaps
-  * Export reports
+**Key Functionality/Components:**
 
-* **Notifications & Activity Logs**
+- KPI cards: Assets Available, Assets Allocated, Maintenance Today, Active Bookings, Pending Transfers, Upcoming Returns
+- Overdue returns (past Expected Return Date) highlighted separately from upcoming ones
+- Quick actions: Register Asset, Book Resource, Raise Maintenance Request
 
-  * Asset assignments
-  * Maintenance approvals
-  * Booking updates
-  * Transfer approvals
-  * Overdue return alerts
-  * Audit discrepancies
-  * Complete audit trail
+### 3. Organization Setup Screen (Admin only — 3 tabs)
 
-### User Roles
+**Purpose:** Maintain the master data everything else depends on.
 
-**Admin**
+**Tab A - Department Management**
 
-* Manage departments, categories, employees, and roles
-* Configure audit cycles
-* View organization-wide analytics
+- Create/edit/deactivate department
+- Assign Department Head, optional Parent Department (for hierarchy), Status (Active/Inactive)
 
-**Asset Manager**
+**Tab B - Asset Category Management**
 
-* Register and allocate assets
-* Approve transfers and maintenance
-* Approve returns
-* Resolve audit discrepancies
+- Create/edit categories (Electronics, Furniture, Vehicles, etc.)
+- Optional category-specific fields (e.g., warranty period for Electronics)
 
-**Department Head**
+**Tab C - Employee Directory**
 
-* Manage departmental assets
-* Approve allocation/transfer requests
-* Book shared resources for the department
+- Name, Email, Department, Role, Status (Active/Inactive)
+- Admin promotes an Employee to Department Head or Asset Manager here — this is the only place roles are assigned
 
-**Employee**
+### 4. Asset Registration & Directory Screen
 
-* View assigned assets
-* Book shared resources
-* Raise maintenance requests
-* Request transfers and returns
+**Purpose:** Register assets and search/track them centrally.
 
-### Workflow
+**Key Functionality/Components:**
 
-1. Admin configures departments, categories, and user roles.
-2. Asset Manager registers assets (initially **Available**).
-3. Assets are allocated or marked as bookable resources.
-4. Employees book shared resources with overlap validation.
-5. Maintenance requests follow an approval workflow before repairs.
-6. Assets are transferred or returned, with overdue items automatically flagged.
-7. Scheduled audits verify assets and generate discrepancy reports.
-8. Dashboards, notifications, logs, and analytics provide organization-wide visibility.
+- **Register:** Name, Category (from Screen 3), auto-generated Asset Tag (e.g., AF-0001), Serial Number, Acquisition Date, Acquisition Cost (kept for ranking/reports only, not linked to accounting), Condition, Location, photo/documents, "shared/bookable" flag
+- **Search/filter** by Asset Tag, Serial Number, QR code, category, status, department, or location
+- Lifecycle status shown per asset: Available, Allocated, Reserved, Under Maintenance, Lost, Retired, Disposed
+- Per-asset history: allocation history + maintenance history
 
-**Goal:** Build a scalable, role-based ERP system for end-to-end asset and resource management, excluding purchasing, invoicing, and accounting functionality.
+### 5. Asset Allocation & Transfer Screen
+
+**Purpose:** Manage who holds what, with explicit conflict rules.
+
+**Key Functionality/Components:**
+
+- Allocate asset to employee/department with optional Expected Return Date
+- **Conflict rule:** You can't allocate an asset that's already taken. *Example: Priya has Laptop AF-0114. If Raj tries to allocate it too, the system blocks it, shows him "currently held by Priya," and offers a Transfer Request button instead.*
+- **Transfer workflow:** Requested → Approved (by Asset Manager/Department Head) → Re-allocated (history updated automatically)
+- **Return flow:** Mark returned, capture condition check-in notes, asset status reverts to Available
+- Overdue allocations (past Expected Return Date) are auto-flagged and feed the Dashboard + Notifications
+
+### 6. Resource Booking Screen
+
+**Purpose:** Time-slot booking of shared resources with no overlaps.
+
+**Key Functionality/Components:**
+
+- Calendar view of a resource's existing bookings
+- **Overlap validation:** Two people can't book the same room at overlapping times. *Example: Room B2 is booked 9:00–10:00. A request for 9:30–10:30 gets rejected since it overlaps; a request for 10:00–11:00 is fine since it starts right after.*
+- Booking status: Upcoming, Ongoing, Completed, Cancelled
+- Cancel/reschedule; reminder notification before the slot starts
+
+### 7. Maintenance Management Screen
+
+**Purpose:** Route repairs through approval before work starts.
+
+**Key Functionality/Components:**
+
+- Raise request: select asset, describe issue, set priority, attach photo
+- **Workflow:** Pending → Approved / Rejected (by Asset Manager) → Technician Assigned → In Progress → Resolved
+- Asset status auto-updates to Under Maintenance on approval and back to Available on resolution
+- Maintenance history retained per asset
+
+### 8. Asset Audit Screen
+
+**Purpose:** Run structured verification cycles instead of a single form.
+
+**Key Functionality/Components:**
+
+- Create an Audit Cycle (scope: department/location, date range)
+- Assign one or more auditors to the cycle
+- Auditor marks each asset: Verified / Missing / Damaged
+- System auto-generates a discrepancy report for flagged items
+- Close Audit Cycle — locks the cycle and updates affected asset statuses (e.g., Lost for confirmed-missing items)
+- Audit history retained per cycle
+
+### 9. Reports & Analytics Screen
+
+**Purpose:** Give managers actionable operational insight.
+
+**Key Functionality/Components:**
+
+- Asset utilization trends; most-used vs. idle assets
+- Maintenance frequency by asset/category
+- Assets due for maintenance or nearing retirement
+- Department-wise allocation summary
+- Resource booking heatmap (peak usage windows)
+- Exportable reports
+
+### 10. Activity Logs & Notifications Screen
+
+**Purpose:** Keep every role informed without digging for updates.
+
+**Key Functionality/Components:**
+
+- **Notification examples:** Asset Assigned, Maintenance Approved/Rejected, Booking Confirmed/Cancelled/Reminder, Transfer Approved, Overdue Return Alert, Audit Discrepancy Flagged
+- Full audit log of admin/manager/employee actions (who did what, when)
+
+---
+
+## User Roles
+
+### Admin
+
+- Manages departments, asset categories, audit cycles, and employee/role assignment (Organization Setup)
+- Views organization-wide analytics
+
+### Asset Manager
+
+- Registers and allocates assets
+- Approves transfers, maintenance requests, and audit discrepancy resolution
+- Approves asset returns and condition check-in notes
+
+### Department Head
+
+- Views assets allocated to their department
+- Approves allocation/transfer requests within their department
+- Books shared resources on behalf of the department
+
+### Employee
+
+- Views assets allocated to them
+- Books shared resources
+- Raises maintenance requests
+- Initiates return/transfer requests
+
+---
+
+## Basic Workflow
+
+1. Admin sets up departments, asset categories, and promotes select employees to Department Head / Asset Manager.
+2. Asset Manager registers a new asset, which enters the system as Available.
+3. Asset is allocated to an employee/department (blocked if already allocated — a transfer request is required instead) or marked as a shared bookable resource.
+4. Employees book shared resources by time slot; overlapping requests are rejected automatically.
+5. If an asset needs repair, the holder raises a maintenance request, which must be approved before work begins and before the asset flips to Under Maintenance.
+6. Assets are transferred or returned as needs change; overdue returns are flagged automatically.
+7. Periodic audit cycles assign auditors, verify assets, and auto-generate discrepancy reports before closing.
+8. All activity is tracked through notifications, logs, and reports.
+
+---
+
+**Mockup (POC):** https://app.excalidraw.com/l/65VNwvy7c4X/5ceOBMjbDby
