@@ -248,7 +248,14 @@ class AssetflowAsset(models.Model):
             if vals.get('asset_tag', _('New')) == _('New'):
                 vals['asset_tag'] = self.env['ir.sequence'].next_by_code(
                     'assetflow.asset') or _('New')
-        return super().create(vals_list)
+        assets = super().create(vals_list)
+        for asset in assets:
+            asset._log(_(
+                "Asset registered — %(category)s, condition %(condition)s.",
+                category=asset.category_id.name,
+                condition=dict(self._fields['condition'].selection).get(
+                    asset.condition, asset.condition)), 'lifecycle')
+        return assets
 
     def copy(self, default=None):
         default = dict(default or {})

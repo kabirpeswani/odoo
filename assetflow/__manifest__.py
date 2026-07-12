@@ -32,6 +32,8 @@ No accounting, purchase or invoicing dependencies.
         # Security must load before anything referencing the groups.
         'security/assetflow_security.xml',
         'security/ir.model.access.csv',
+        # Record rules for the audit trail (needs the access rights above).
+        'security/assetflow_log_security.xml',
 
         # Sequences, crons, demo-free master data.
         'data/assetflow_data.xml',
@@ -41,6 +43,8 @@ No accounting, purchase or invoicing dependencies.
 
         # Views, actions and menus.
         'views/assetflow_menus_views.xml',
+        # The audit trail. Loads last: it inherits the forms defined above.
+        'views/assetflow_log_views.xml',
     ],
     'assets': {
         'web.assets_backend': [

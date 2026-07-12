@@ -323,6 +323,8 @@ class AssetflowAssetAllocation(models.Model):
             if asset.state in BLOCKING_STATES and not allocation.is_transfer:
                 allocation._raise_conflict(asset, blocking)
 
+            previous_holder = (allocation.previous_allocation_id.employee_id
+                               if allocation.is_transfer else False)
             if allocation.is_transfer:
                 allocation._close_previous_allocation()
 
@@ -334,6 +336,15 @@ class AssetflowAssetAllocation(models.Model):
             asset._set_state('allocated', _(
                 "allocated to %s (%s)",
                 allocation.employee_id.name, allocation.name))
+            if previous_holder:
+                # A transfer leaves the asset 'allocated' throughout, so
+                # _set_state stays quiet — yet the asset has changed hands,
+                # which is exactly what its history needs to show.
+                asset._log(_(
+                    "Handed over: %(old)s → %(new)s (%(ref)s).",
+                    old=previous_holder.name,
+                    new=allocation.employee_id.name,
+                    ref=allocation.name), 'allocation')
             allocation._log(_(
                 "Approved by %(approver)s — asset handed over to %(holder)s.",
                 approver=self.env.user.name,

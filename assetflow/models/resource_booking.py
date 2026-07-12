@@ -174,6 +174,13 @@ class AssetflowResourceBooking(models.Model):
                     'assetflow.resource.booking') or _('New')
         bookings = super().create(vals_list)
         bookings._sync_state_from_clock()
+        for booking in bookings:
+            booking._log(_(
+                "Booked %(asset)s for %(user)s, %(start)s → %(end)s.",
+                asset=booking.asset_id.display_name,
+                user=booking.user_id.name,
+                start=fields.Datetime.to_string(booking.start_time),
+                end=fields.Datetime.to_string(booking.end_time)), 'booking')
         return bookings
 
     def write(self, vals):
@@ -196,6 +203,8 @@ class AssetflowResourceBooking(models.Model):
             if booking.state != 'upcoming':
                 raise UserError(_("Only an upcoming booking can be started."))
             booking.state = 'ongoing'
+            booking._log(_("Booking started by %s.", self.env.user.name),
+                         'booking')
             if booking.asset_id.state == 'available':
                 booking.asset_id._set_state('reserved', _(
                     "booked by %s", booking.user_id.name))
@@ -207,6 +216,8 @@ class AssetflowResourceBooking(models.Model):
                 raise UserError(_(
                     "Only an upcoming or ongoing booking can be completed."))
             booking.state = 'completed'
+            booking._log(_("Booking completed by %s.", self.env.user.name),
+                         'booking')
             booking._release_asset()
         return True
 
@@ -215,6 +226,8 @@ class AssetflowResourceBooking(models.Model):
             if booking.state == 'completed':
                 raise UserError(_("A completed booking cannot be cancelled."))
             booking.state = 'cancelled'
+            booking._log(_("Booking cancelled by %s.", self.env.user.name),
+                         'booking')
             booking._release_asset()
         return True
 
@@ -224,6 +237,8 @@ class AssetflowResourceBooking(models.Model):
                 raise UserError(_(
                     "Only a cancelled booking can be reopened."))
             booking.state = 'upcoming'
+            booking._log(_("Booking reopened by %s.", self.env.user.name),
+                         'booking')
         # Re-run the overlap check: the slot may have been taken meanwhile.
         self._check_no_overlap()
         return True

@@ -1,0 +1,236 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ================================================================== -->
+    <!--  ACTIVITY LOG — the audit trail                                     -->
+    <!--                                                                     -->
+    <!--  Everything here lives in its own file, and the per-record History  -->
+    <!--  tabs are injected with inherited views rather than by editing      -->
+    <!--  assetflow_menus_views.xml, so this cannot collide with work in     -->
+    <!--  progress on the dashboard.                                         -->
+    <!-- ================================================================== -->
+
+    <record id="view_assetflow_log_tree" model="ir.ui.view">
+        <field name="name">assetflow.log.tree</field>
+        <field name="model">assetflow.log</field>
+        <field name="arch" type="xml">
+            <!-- The trail is append-only: no create, no edit, no delete. -->
+            <tree string="Activity Log" create="false" edit="false" delete="false">
+                <field name="create_date" string="When" widget="datetime"/>
+                <field name="log_type" widget="badge"
+                       decoration-info="log_type == 'lifecycle'"
+                       decoration-success="log_type == 'allocation'"
+                       decoration-warning="log_type == 'maintenance'"
+                       decoration-danger="log_type == 'audit'"
+                       decoration-muted="log_type == 'system'"/>
+                <field name="res_model" string="Type" optional="show"/>
+                <field name="res_name" string="Record" optional="show"/>
+                <field name="body" string="Entry"/>
+                <field name="author_id" string="By" widget="many2one_avatar_user"/>
+                <field name="record_ref" string="Open" optional="hide"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_assetflow_log_form" model="ir.ui.view">
+        <field name="name">assetflow.log.form</field>
+        <field name="model">assetflow.log</field>
+        <field name="arch" type="xml">
+            <form string="Activity Log Entry" create="false" edit="false">
+                <sheet>
+                    <div class="oe_title">
+                        <h2><field name="body" readonly="1"/></h2>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="log_type" widget="badge" readonly="1"/>
+                            <field name="author_id" readonly="1"
+                                   widget="many2one_avatar_user"/>
+                            <field name="create_date" string="Logged At" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="res_model" string="Record Type" readonly="1"/>
+                            <field name="res_name" string="Record" readonly="1"/>
+                            <field name="record_ref" string="Open Record" readonly="1"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_assetflow_log_search" model="ir.ui.view">
+        <field name="name">assetflow.log.search</field>
+        <field name="model">assetflow.log</field>
+        <field name="arch" type="xml">
+            <search string="Activity Log">
+                <field name="body" string="Entry"
+                       filter_domain="['|', ('body', 'ilike', self), ('res_name', 'ilike', self)]"/>
+                <field name="res_name" string="Record"/>
+                <field name="author_id"/>
+                <separator/>
+                <filter name="type_lifecycle" string="Lifecycle"
+                        domain="[('log_type', '=', 'lifecycle')]"/>
+                <filter name="type_allocation" string="Allocation"
+                        domain="[('log_type', '=', 'allocation')]"/>
+                <filter name="type_booking" string="Booking"
+                        domain="[('log_type', '=', 'booking')]"/>
+                <filter name="type_maintenance" string="Maintenance"
+                        domain="[('log_type', '=', 'maintenance')]"/>
+                <filter name="type_audit" string="Audit"
+                        domain="[('log_type', '=', 'audit')]"/>
+                <separator/>
+                <filter name="filter_mine" string="My Actions"
+                        domain="[('author_id', '=', uid)]"/>
+                <separator/>
+                <filter name="filter_today" string="Today"
+                        domain="[('create_date', '&gt;=', datetime.datetime.combine(context_today(), datetime.time(0,0,0)))]"/>
+                <filter name="filter_week" string="Last 7 Days"
+                        domain="[('create_date', '&gt;=', (context_today() - datetime.timedelta(days=7)).strftime('%Y-%m-%d'))]"/>
+                <group expand="0" string="Group By">
+                    <filter name="group_type" string="Activity"
+                            context="{'group_by': 'log_type'}"/>
+                    <filter name="group_model" string="Record Type"
+                            context="{'group_by': 'res_model'}"/>
+                    <filter name="group_author" string="Author"
+                            context="{'group_by': 'author_id'}"/>
+                    <filter name="group_date" string="Date"
+                            context="{'group_by': 'create_date:day'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_assetflow_log" model="ir.actions.act_window">
+        <field name="name">Activity Log</field>
+        <field name="res_model">assetflow.log</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="view_assetflow_log_search"/>
+        <field name="context">{'search_default_group_date': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Nothing has happened yet</p>
+            <p>Every allocation, transfer, booking, maintenance step and audit
+               finding writes an entry here. Entries can be read but never
+               edited or deleted.</p>
+        </field>
+    </record>
+
+    <menuitem id="menu_assetflow_log"
+              name="Activity Log"
+              parent="menu_assetflow_audits"
+              action="action_assetflow_log"
+              sequence="30"/>
+
+    <!-- ================================================================== -->
+    <!--  Per-record History tabs, injected into the existing forms.         -->
+    <!-- ================================================================== -->
+
+    <record id="view_asset_form_log" model="ir.ui.view">
+        <field name="name">assetflow.asset.form.history</field>
+        <field name="model">assetflow.asset</field>
+        <field name="inherit_id" ref="assetflow.view_asset_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page string="History" name="history">
+                    <field name="activity_log_ids" nolabel="1" readonly="1">
+                        <tree create="false" edit="false" delete="false">
+                            <field name="create_date" string="When"/>
+                            <field name="log_type" widget="badge"/>
+                            <field name="body" string="Entry"/>
+                            <field name="author_id" string="By"
+                                   widget="many2one_avatar_user"/>
+                        </tree>
+                    </field>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_asset_allocation_form_log" model="ir.ui.view">
+        <field name="name">assetflow.asset.allocation.form.history</field>
+        <field name="model">assetflow.asset.allocation</field>
+        <field name="inherit_id" ref="assetflow.view_asset_allocation_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page string="History" name="history">
+                    <field name="activity_log_ids" nolabel="1" readonly="1">
+                        <tree create="false" edit="false" delete="false">
+                            <field name="create_date" string="When"/>
+                            <field name="log_type" widget="badge"/>
+                            <field name="body" string="Entry"/>
+                            <field name="author_id" string="By"
+                                   widget="many2one_avatar_user"/>
+                        </tree>
+                    </field>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_maintenance_form_log" model="ir.ui.view">
+        <field name="name">assetflow.maintenance.form.history</field>
+        <field name="model">assetflow.maintenance</field>
+        <field name="inherit_id" ref="assetflow.view_maintenance_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page string="History" name="history">
+                    <field name="activity_log_ids" nolabel="1" readonly="1">
+                        <tree create="false" edit="false" delete="false">
+                            <field name="create_date" string="When"/>
+                            <field name="log_type" widget="badge"/>
+                            <field name="body" string="Entry"/>
+                            <field name="author_id" string="By"
+                                   widget="many2one_avatar_user"/>
+                        </tree>
+                    </field>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_audit_cycle_form_log" model="ir.ui.view">
+        <field name="name">assetflow.audit.cycle.form.history</field>
+        <field name="model">assetflow.audit.cycle</field>
+        <field name="inherit_id" ref="assetflow.view_audit_cycle_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page string="History" name="history">
+                    <field name="activity_log_ids" nolabel="1" readonly="1">
+                        <tree create="false" edit="false" delete="false">
+                            <field name="create_date" string="When"/>
+                            <field name="log_type" widget="badge"/>
+                            <field name="body" string="Entry"/>
+                            <field name="author_id" string="By"
+                                   widget="many2one_avatar_user"/>
+                        </tree>
+                    </field>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- The booking form has no notebook of its own, so give it one. -->
+    <record id="view_resource_booking_form_log" model="ir.ui.view">
+        <field name="name">assetflow.resource.booking.form.history</field>
+        <field name="model">assetflow.resource.booking</field>
+        <field name="inherit_id" ref="assetflow.view_resource_booking_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//sheet" position="inside">
+                <notebook>
+                    <page string="History" name="history">
+                        <field name="activity_log_ids" nolabel="1" readonly="1">
+                            <tree create="false" edit="false" delete="false">
+                                <field name="create_date" string="When"/>
+                                <field name="log_type" widget="badge"/>
+                                <field name="body" string="Entry"/>
+                                <field name="author_id" string="By"
+                                       widget="many2one_avatar_user"/>
+                            </tree>
+                        </field>
+                    </page>
+                </notebook>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>
